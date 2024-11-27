@@ -1,0 +1,6 @@
+v 4
+file . "mandelbrot.vhdl" "d1394a2019c5ee30d6d0ed991d37f9659fa00124" "20241106095959.114":
+  entity mandelbrot at 5( 205) + 0 on 14;
+  architecture rtl of mandelbrot at 39( 1276) + 0 on 15;
+file . "dsd_prj_pkg.vhdl" "cf14b3e53bc8547e8c4b03a52c77d48b8372641a" "20241123132025.139":
+  package dsd_prj_pkg at 6( 207) + 0 on 16;
