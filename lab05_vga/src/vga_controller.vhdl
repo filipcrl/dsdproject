@@ -156,9 +156,9 @@ begin
   XCoordxDO <= HCntxDP when HStatexDP = Display else (others => '0');
   YCoordxDO <= VCntxDP when VStatexDP = Display else (others => '0');
 
-  RedxSO   <= RedxSI;
-  GreenxSO <= GreenxSI;
-  BluexSO  <= BluexSI; 
+  RedxSO   <= RedxSI when (HStatexDP = Display) and (VStatexDP = Display) else "0000";
+  GreenxSO <= GreenxSI when (HStatexDP = Display) and (VStatexDP = Display) else "0000";
+  BluexSO  <= BluexSI when (HStatexDP = Display) and (VStatexDP = Display) else "0000"; 
 
 end rtl;
 --=============================================================================
