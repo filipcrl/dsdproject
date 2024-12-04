@@ -177,7 +177,7 @@ begin
   WEAxS     <= "0";
   WrAddrAxD <= (others => '0');
   DINAxD    <= (others => '0');
-  RdAddrBxD <= ; -- TODO: Map the X and Y coordinates to the address of the memory
+  RdAddrBxD <= std_logic_vector(resize((HS_DISPLAY / 4) * (YCoordxD / 4) + (XCoordxD / 4), RdAddrBxD'length));
 
   RedxSI   <= DOUTBxD(3 * COLOR_BW - 1 downto 2 * COLOR_BW);
   GreenxSI <= DOUTBxD(2 * COLOR_BW - 1 downto 1 * COLOR_BW);
