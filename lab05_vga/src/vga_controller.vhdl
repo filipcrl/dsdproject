@@ -64,7 +64,7 @@ architecture rtl of vga_controller is
 
   signal HCntxDN, HCntxDP   : unsigned(COORD_BW - 1 downto 0);
   signal VCntxDN, VCntxDP   : unsigned(COORD_BW - 1 downto 0);
-  signal Tst : unsigned(COORD_BW - 1 downto 0);
+  signal VCntNextxD         : unsigned(COORD_BW - 1 downto 0);
   signal HPulseTransitionxS : std_logic;
 
 --=============================================================================
@@ -106,27 +106,27 @@ begin
   process (all)
   begin
     VStatexDN <= VStatexDP;
-    VCntxDN <= VCntxDP + 1 when HPulseTransitionxS = '1' else VCntxDP;
-    Tst <= VCntxDP + 1 when HPulseTransitionxS = '1' else VCntxDP;
+    VCntNextxD <= VCntxDP + 1 when HPulseTransitionxS = '1' else VCntxDP;
+    VCntxDN <= VCntNextxD;
 
     case VStatexDP is
       when Pulse =>
-        if (Tst = VS_PULSE) then
+        if (VCntNextxD = VS_PULSE) then
           VStatexDN <= BackPorch;
           VCntxDN <= (others => '0');
         end if;
       when BackPorch =>
-        if (Tst = VS_BACK_PORCH) then
+        if (VCntNextxD = VS_BACK_PORCH) then
           VStatexDN <= Display;
           VCntxDN <= (others => '0');
         end if;
       when Display =>
-        if (Tst = VS_DISPLAY) then
+        if (VCntNextxD = VS_DISPLAY) then
           VStatexDN <= FrontPorch;
           VCntxDN <= (others => '0');
         end if;
       when FrontPorch =>
-        if (Tst = VS_FRONT_PORCH) then
+        if (VCntNextxD = VS_FRONT_PORCH) then
           VStatexDN <= Pulse;
           VCntxDN <= (others => '0');
         end if;
@@ -156,9 +156,9 @@ begin
   XCoordxDO <= HCntxDP when HStatexDP = Display else (others => '0');
   YCoordxDO <= VCntxDP when VStatexDP = Display else (others => '0');
 
-  RedxSO   <= RedxSI;
-  GreenxSO <= GreenxSI;
-  BluexSO  <= BluexSI; 
+  RedxSO   <= RedxSI when (HStatexDP = Display) and (VStatexDP = Display) else "0000";
+  GreenxSO <= GreenxSI when (HStatexDP = Display) and (VStatexDP = Display) else "0000";
+  BluexSO  <= BluexSI when (HStatexDP = Display) and (VStatexDP = Display) else "0000"; 
 
 end rtl;
 --=============================================================================
