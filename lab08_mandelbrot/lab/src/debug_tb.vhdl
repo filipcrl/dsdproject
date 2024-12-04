@@ -71,20 +71,21 @@ begin
     debug_process : process
     begin
         while true loop
-    
-    
-                -- report "reset = " & to_string(reset);
-            report "clk = " & to_string(clk);
-            report "WExSO = " & to_string(WExS);
-            report "XxD0 = " & to_string(XxD);
-            report "YxD0 = " & to_string(YxD);
-                --report "DEBUG_CRxDO = " & to_string(DEBUG_CRxD);
-                --report "DEBUG_CMxDO = " & to_string(DEBUG_CMxD);
-                --report "DEBUG_ZRxDO = " & to_string(DEBUG_ZRxD);
-                --report "DEBUG_ZMxDO = " & to_string(DEBUG_ZMxD);
-            report "ITERxDO = " & to_string(ITERxD);
+            
+            if (WExS = '1') then
+                    -- report "reset = " & to_string(reset);
+                report "clk = " & to_string(clk);
+                report "WExSO = " & to_string(WExS);
+                report "XxDO = " & integer'image(to_integer(XxD));
+                report "YxD0 = " & integer'image(to_integer(YxD));
+                    --report "DEBUG_CRxDO = " & to_string(DEBUG_CRxD);
+                    --report "DEBUG_CMxDO = " & to_string(DEBUG_CMxD);
+                    --report "DEBUG_ZRxDO = " & to_string(DEBUG_ZRxD);
+                    --report "DEBUG_ZMxDO = " & to_string(DEBUG_ZMxD);
+                report "ITERxDO = " & integer'image(to_integer(ITERxD));
                 --report "DEBUG_OVERFLOW = " & to_string(OVERFLOW);
-            report "=======";
+                report "=======";
+            end if;
             wait for 10 us;
         end loop;
     end process debug_process;

@@ -42,113 +42,206 @@ end entity mandelbrot;
 -- ARCHITECTURE DECLARATION
 --=============================================================================
 architecture rtl of mandelbrot is
-  signal X : unsigned(COORD_BW-1 downto 0);
-  signal Y : unsigned(COORD_BW-1 downto 0);
-  signal C_RE : signed(N_BITS-1 downto 0);
-  signal C_IM : signed(N_BITS-1 downto 0);
-  signal Z_RE : signed(N_BITS-1 downto 0);
-  signal Z_IM : signed(N_BITS-1 downto 0);
-  signal OVERFLOW : std_logic;
-  signal ITERxD : unsigned(MEM_DATA_BW-1 downto 0);
+  -- X --
+  signal X_PREV : unsigned(COORD_BW-1 downto 0);
+  signal X_CURR : unsigned(COORD_BW-1 downto 0);
+  signal X_NEXT : unsigned(COORD_BW-1 downto 0);
+
+  -- Y --
+  signal Y_PREV : unsigned(COORD_BW-1 downto 0);
+  signal Y_CURR : unsigned(COORD_BW-1 downto 0);
+  signal Y_NEXT : unsigned(COORD_BW-1 downto 0);
+ 
+  -- Re(C) --
+  signal C_RE_PREV : signed(N_BITS-1 downto 0);
+  signal C_RE_CURR : signed(N_BITS-1 downto 0);
+  signal C_RE_NEXT : signed(N_BITS-1 downto 0);
+
+  -- Im(C) --
+  signal C_IM_PREV : signed(N_BITS-1 downto 0);
+  signal C_IM_CURR : signed(N_BITS-1 downto 0);
+  signal C_IM_NEXT : signed(N_BITS-1 downto 0);
+
+  -- Re(Z) --
+  signal Z_RE_PREV : signed(N_BITS-1 downto 0);
+  signal Z_RE_CURR : signed(N_BITS-1 downto 0);
+  signal Z_RE_NEXT : signed(N_BITS-1 downto 0);
+
+  -- Im(Z) --
+  signal Z_IM_PREV : signed(N_BITS-1 downto 0);
+  signal Z_IM_CURR : signed(N_BITS-1 downto 0);
+  signal Z_IM_NEXT : signed(N_BITS-1 downto 0);
+
+  -- Norm(Z) --
+  signal Z_NORM_CURR : signed((N_BITS+3)-1 downto 0);
+  signal Z_NORM_NEXT : signed((N_BITS+3)-1 downto 0);
+
+  signal ITERxD_PREV : unsigned(MEM_DATA_BW-1 downto 0);
+  signal ITERxD_CURR : unsigned(MEM_DATA_BW-1 downto 0);
+  signal ITERxD_NEXT : unsigned(MEM_DATA_BW-1 downto 0);
+
   signal WExS : std_logic;
+
+  --constant Z_NORM_0 : signed(N_BITS + 3 - 1 downto 0) :=  resize(shift_right(C_RE_0 * C_RE_0 + C_IM_0 * C_IM_0, N_FRAC), N_BITS+3); -- Q3.15
 begin
 
+  -- X/Y Loop --
   x_y_loop : process (CLKxCI, RSTxRI)
   begin
     if (RSTxRI = '1') then
-      X <= (others => '0');
-      Y <= (others => '0');
-      C_RE <= C_RE_0;
-      C_IM <= C_IM_0;
+      X_PREV <= (others => '0');
+      X_CURR <= (others => '0');
+
+      Y_PREV <= (others => '0');
+      Y_CURR <= (others => '0');
+
+      C_RE_PREV <= C_RE_0;
+      C_RE_CURR <= C_RE_0;
+
+      C_IM_PREV <= C_IM_0;
+      C_IM_CURR <= C_IM_0;
     elsif (CLKxCI'event and CLKxCI='1') then
-      if (WExS='1') then
-        X <= (others => '0') when (X=HS_DISPLAY-1) else 
-          X+1;
-        Y <= (others => '0') when (Y=VS_DISPLAY-1)  else 
-          Y+1 when (X=HS_DISPLAY-1) else 
-          Y;
-        C_RE <= C_RE_0 when (X=HS_DISPLAY-1) else
-          C_RE + C_RE_INC;
-        C_IM <= C_IM_0 when (Y=VS_DISPLAY-1) else 
-          C_IM + C_IM_INC when (X=HS_DISPLAY-1) else 
-          C_IM;
-      else
-        X <= X;
-        Y <= Y;
-        C_RE <= C_RE;
-        C_IM <= C_IM;
-      end if;
-    else
-      X <= X;
-      Y <= Y;
-      C_RE <= C_RE;
-      C_IM <= C_IM;
+      X_PREV <= X_CURR;
+      X_CURR <= X_NEXT;
+
+      Y_PREV <= Y_CURR;
+      Y_CURR <= Y_NEXT;
+
+      C_RE_PREV <= C_RE_CURR;
+      C_RE_CURR <= C_RE_NEXT;
+      
+      C_IM_PREV <= C_IM_CURR;
+      C_IM_CURR <= C_IM_NEXT;
     end if;
   end process x_y_loop;
+
+  -- X/Y Computation --
+  x_y_computation : process (all)
+  begin
+  if (WExS='1') then
+    if (X_CURR=HS_DISPLAY-1) then
+      X_NEXT <= (others => '0');
+    else
+      X_NEXT <= X_CURR+1;
+    end if;
+  else
+    X_NEXT <= X_CURR;
+  end if;
+
+  if (WExS='1') then
+    if (Y_CURR=VS_DISPLAY-1) then
+      Y_NEXT <= (others => '0');
+    elsif (X_CURR=HS_DISPLAY-1) then
+      Y_NEXT <= Y_CURR+1;
+    else 
+      Y_NEXT <= Y_CURR;
+    end if;
+  else
+    Y_NEXT <= Y_CURR;
+  end if;
+  end process x_y_computation;
+  
+  -- C Computation --
+  c_computation : process (all)
+  begin
+  if (WExS='1') then
+    if (X_CURR=HS_DISPLAY-1) then
+      C_RE_NEXT <= C_RE_0;
+    else
+      C_RE_NEXT <= C_RE_CURR + C_RE_INC;
+    end if;
+  else
+    C_RE_NEXT <= C_RE_CURR;
+  end if;
+
+  if (WExS='1') then
+    if (Y_CURR=VS_DISPLAY-1) then
+      C_IM_NEXT <= C_IM_0;
+    elsif (X_CURR=HS_DISPLAY-1) then
+      C_IM_NEXT <= C_IM_CURR + C_IM_INC;
+    else 
+      C_IM_NEXT <= C_IM_CURR;
+    end if;
+  else
+    C_IM_NEXT <= C_IM_CURR;
+  end if;
+  end process c_computation;
+
+  z_computation : process (all)
+  begin
+    if (WExS = '0') then
+      if (Z_NORM_CURR < 4*(2**N_FRAC) and
+          ITERxD_CURR < MAX_ITER) then
+        Z_RE_NEXT <= resize(shift_right(Z_RE_CURR * Z_RE_CURR - Z_IM_CURR * Z_IM_CURR + C_RE_CURR*(2**N_FRAC), N_FRAC), N_BITS);
+        Z_IM_NEXT <= resize(shift_right(2 * Z_RE_CURR * Z_IM_CURR + C_IM_CURR*(2**N_FRAC), N_FRAC), N_BITS);
+        Z_NORM_NEXT <= resize(shift_right(Z_RE_CURR * Z_RE_CURR + Z_IM_CURR * Z_IM_CURR, N_FRAC), N_BITS+3);
+      else
+        Z_RE_NEXT <= Z_RE_CURR;
+        Z_IM_NEXT <= Z_IM_CURR;
+        Z_NORM_NEXT <= Z_NORM_CURR;
+      end if;
+    else
+      Z_RE_NEXT <= C_RE_NEXT;
+      Z_IM_NEXT <= C_IM_NEXT;
+      Z_NORM_NEXT <= resize(shift_right(C_RE_NEXT * C_RE_NEXT + C_IM_NEXT * C_IM_NEXT, N_FRAC), N_BITS+3);
+    end if;
+  end process z_computation;
+
+  iter_computation : process (all)
+  begin
+    if (WExS = '0') then
+      if (Z_NORM_CURR < 4*(2**N_FRAC) and
+          ITERxD_CURR < MAX_ITER) then
+        ITERxD_NEXT <= ITERxD_CURR + 1;
+      else
+        ITERxD_NEXT <= ITERxD_CURR;
+      end if;
+    else
+      ITERxD_NEXT <= (others => '0');
+    end if;
+  end process iter_computation;
 
   conv_loop : process (CLKxCI, RSTxRI)
   begin
     if (RSTxRI = '1') then
-      Z_RE <= C_RE_0;
-      Z_IM <= C_IM_0;
-      ITERxD <= (others => '0');
+      Z_RE_PREV <= C_RE_0;
+      Z_RE_CURR <= C_RE_0;
+
+      Z_IM_PREV <= C_IM_0;
+      Z_IM_CURR <= C_IM_0;
+
+      Z_NORM_CURR <= resize(shift_right(C_RE_0 * C_RE_0 + C_IM_0 * C_IM_0, N_FRAC), N_BITS+3);
+
+      ITERxD_PREV <= (others => '0');
+      ITERxD_CURR <= (others => '0');
+
       WExS <= '0';
-      XxDO <= (others => '0');
-      YxDO <= (others => '0');
-      OVERFLOW <= '0';
     elsif (CLKxCI'event and CLKxCI='1') then
-      if (WExS='0') then
-        if ((OVERFLOW='0') and 
-            (shift_right(Z_RE * Z_RE + Z_IM * Z_IM, N_FRAC) < 4*(2**N_FRAC)) and
-            ITERxD < MAX_ITER) then
-          Z_RE <= resize(shift_right(Z_RE * Z_RE - Z_IM * Z_IM + C_RE*(2**N_FRAC), N_FRAC), N_BITS);
-          Z_IM <= resize(shift_right(2 * Z_RE * Z_IM + C_IM*(2**N_FRAC), N_FRAC), N_BITS);
-          if ((shift_right(Z_RE * Z_RE - Z_IM * Z_IM + C_RE*(2**N_FRAC), N_FRAC) > 4*(2**N_FRAC))
-              or (shift_right(2 * Z_RE * Z_IM + C_IM*(2**N_FRAC), N_FRAC) > 4*(2**N_FRAC))) then
-              OVERFLOW <= '1';
-          else
-              OVERFLOW <= '0';
-          end if;
-          ITERxD <= ITERxD + 1;
-          WExS <= WExS;
-          XxDO <= X;
-          YxDO <= Y;
-        else
-          Z_RE <= Z_RE;
-          Z_IM <= Z_IM;
-          ITERxD <= ITERxD;
-          WExS <= '1';
-          XxDO <= X;
-          YxDO <= Y;
-          OVERFLOW <= OVERFLOW;
-        end if;
-      else
-        Z_RE <= C_RE_0 when (X=HS_DISPLAY-1) else
-          C_RE + C_RE_INC;
-        Z_IM <= C_IM_0 when (Y=VS_DISPLAY-1) else 
-          C_IM + C_IM_INC when (X=HS_DISPLAY-1) else 
-          C_IM;
-        ITERxD <= (others => '0');
+      Z_RE_PREV <= Z_RE_CURR;
+      Z_RE_CURR <= Z_RE_NEXT;
+
+      Z_IM_PREV <= Z_IM_CURR;
+      Z_IM_CURR <= Z_IM_NEXT;
+
+      Z_NORM_CURR <= Z_NORM_NEXT;
+      
+      ITERxD_PREV <= ITERxD_CURR;
+      ITERxD_CURR <= ITERxD_NEXT;
+
+      if (Z_NORM_CURR < 4*(2**N_FRAC) and
+          ITERxD_CURR < MAX_ITER) then 
         WExS <= '0';
-        XxDO <= X;
-        YxDO <= Y;
-        OVERFLOW <= '0';
+      else
+        WExS <= '1';
       end if;
-    else
-      Z_RE <= Z_RE;
-      Z_IM <= Z_IM;
-      ITERxD <= ITERxD;
-      WExS <= WExS;
-      XxDO <=  X;
-      YxDO <= Y;
-      OVERFLOW <= OVERFLOW;
     end if;
-    --DEBUG_ZRxDO <= Z_RE;
-    --DEBUG_ZMxDO <= Z_IM;
-    ITERxDO <= ITERxD;
-    WExSO <= WExS;
-    --DEBUG_OVERFLOW <= OVERFLOW;
   end process conv_loop;
+
+  -- Outputs --
+  XxDO <= X_CURR;
+  YxDO <= Y_CURR;
+  WExSO <= WExS;
+  ITERxDO <= ITERxD_PREV;
 
 end architecture rtl;
 --=============================================================================
