@@ -29,12 +29,7 @@ entity mandelbrot is
     WExSO   : out std_logic;
     XxDO    : out unsigned(COORD_BW - 1 downto 0);
     YxDO    : out unsigned(COORD_BW - 1 downto 0);
-    --DEBUG_CRxDO    : out signed(N_BITS - 1 downto 0);
-    --DEBUG_CMxDO    : out signed(N_BITS - 1 downto 0);
-    --DEBUG_ZRxDO    : out signed(N_BITS - 1 downto 0);
-    --DEBUG_ZMxDO    : out signed(N_BITS - 1 downto 0);
     ITERxDO   : out unsigned(MEM_DATA_BW-1 downto 0)
-    --DEBUG_OVERFLOW : out std_logic
   );
 end entity mandelbrot;
 
@@ -53,36 +48,39 @@ architecture rtl of mandelbrot is
   signal Y_NEXT : unsigned(COORD_BW-1 downto 0);
  
   -- Re(C) --
-  signal C_RE_PREV : signed(N_BITS-1 downto 0);
-  signal C_RE_CURR : signed(N_BITS-1 downto 0);
-  signal C_RE_NEXT : signed(N_BITS-1 downto 0);
+  signal C_RE_PREV : signed(N_BITS+1-1 downto 0);
+  signal C_RE_CURR : signed(N_BITS+1-1 downto 0);
+  signal C_RE_NEXT : signed(N_BITS+1-1 downto 0);
 
   -- Im(C) --
-  signal C_IM_PREV : signed(N_BITS-1 downto 0);
-  signal C_IM_CURR : signed(N_BITS-1 downto 0);
-  signal C_IM_NEXT : signed(N_BITS-1 downto 0);
+  signal C_IM_PREV : signed(N_BITS+1-1 downto 0);
+  signal C_IM_CURR : signed(N_BITS+1-1 downto 0);
+  signal C_IM_NEXT : signed(N_BITS+1-1 downto 0);
 
   -- Re(Z) --
-  signal Z_RE_PREV : signed(N_BITS-1 downto 0);
-  signal Z_RE_CURR : signed(N_BITS-1 downto 0);
-  signal Z_RE_NEXT : signed(N_BITS-1 downto 0);
+  signal Z_RE_PREV : signed(N_BITS+1-1 downto 0);
+  signal Z_RE_CURR : signed(N_BITS+1-1 downto 0);
+  signal Z_RE_NEXT : signed(N_BITS+1-1 downto 0);
 
   -- Im(Z) --
-  signal Z_IM_PREV : signed(N_BITS-1 downto 0);
-  signal Z_IM_CURR : signed(N_BITS-1 downto 0);
-  signal Z_IM_NEXT : signed(N_BITS-1 downto 0);
+  signal Z_IM_PREV : signed(N_BITS+1-1 downto 0);
+  signal Z_IM_CURR : signed(N_BITS+1-1 downto 0);
+  signal Z_IM_NEXT : signed(N_BITS+1-1 downto 0);
 
   -- Norm(Z) --
-  signal Z_NORM_CURR : signed((N_BITS+3)-1 downto 0);
-  signal Z_NORM_NEXT : signed((N_BITS+3)-1 downto 0);
+  signal Z_NORM_CURR : signed((N_BITS+5)-1 downto 0);
+  signal Z_NORM_NEXT : signed((N_BITS+5)-1 downto 0);
 
+  -- Iteration Number --
   signal ITERxD_PREV : unsigned(MEM_DATA_BW-1 downto 0);
   signal ITERxD_CURR : unsigned(MEM_DATA_BW-1 downto 0);
   signal ITERxD_NEXT : unsigned(MEM_DATA_BW-1 downto 0);
 
+  -- Write enable signal --
   signal WExS : std_logic;
 
-  --constant Z_NORM_0 : signed(N_BITS + 3 - 1 downto 0) :=  resize(shift_right(C_RE_0 * C_RE_0 + C_IM_0 * C_IM_0, N_FRAC), N_BITS+3); -- Q3.15
+  -- Default norm --
+  constant Z_NORM_0 : signed((N_BITS+5)-1 downto 0) :=  resize(shift_right(C_RE_0 * C_RE_0 + C_IM_0 * C_IM_0, N_FRAC), N_BITS+5);
 begin
 
   -- X/Y Loop --
@@ -95,11 +93,11 @@ begin
       Y_PREV <= (others => '0');
       Y_CURR <= (others => '0');
 
-      C_RE_PREV <= C_RE_0;
-      C_RE_CURR <= C_RE_0;
+      C_RE_PREV <= resize(C_RE_0, N_BITS+1);
+      C_RE_CURR <= resize(C_RE_0, N_BITS+1);
 
-      C_IM_PREV <= C_IM_0;
-      C_IM_CURR <= C_IM_0;
+      C_IM_PREV <= resize(C_IM_0, N_BITS+1);
+      C_IM_CURR <= resize(C_IM_0, N_BITS+1);
     elsif (CLKxCI'event and CLKxCI='1') then
       X_PREV <= X_CURR;
       X_CURR <= X_NEXT;
@@ -129,7 +127,7 @@ begin
   end if;
 
   if (WExS='1') then
-    if (Y_CURR=VS_DISPLAY-1) then
+    if (Y_CURR=VS_DISPLAY-1) and (X_CURR=HS_DISPLAY-1) then
       Y_NEXT <= (others => '0');
     elsif (X_CURR=HS_DISPLAY-1) then
       Y_NEXT <= Y_CURR+1;
@@ -146,7 +144,7 @@ begin
   begin
   if (WExS='1') then
     if (X_CURR=HS_DISPLAY-1) then
-      C_RE_NEXT <= C_RE_0;
+      C_RE_NEXT <= resize(C_RE_0, N_BITS+1);
     else
       C_RE_NEXT <= C_RE_CURR + C_RE_INC;
     end if;
@@ -156,7 +154,7 @@ begin
 
   if (WExS='1') then
     if (Y_CURR=VS_DISPLAY-1) then
-      C_IM_NEXT <= C_IM_0;
+      C_IM_NEXT <= resize(C_IM_0, N_BITS+1);
     elsif (X_CURR=HS_DISPLAY-1) then
       C_IM_NEXT <= C_IM_CURR + C_IM_INC;
     else 
@@ -167,50 +165,17 @@ begin
   end if;
   end process c_computation;
 
-  z_computation : process (all)
-  begin
-    if (WExS = '0') then
-      if (Z_NORM_CURR < 4*(2**N_FRAC) and
-          ITERxD_CURR < MAX_ITER) then
-        Z_RE_NEXT <= resize(shift_right(Z_RE_CURR * Z_RE_CURR - Z_IM_CURR * Z_IM_CURR + C_RE_CURR*(2**N_FRAC), N_FRAC), N_BITS);
-        Z_IM_NEXT <= resize(shift_right(2 * Z_RE_CURR * Z_IM_CURR + C_IM_CURR*(2**N_FRAC), N_FRAC), N_BITS);
-        Z_NORM_NEXT <= resize(shift_right(Z_RE_CURR * Z_RE_CURR + Z_IM_CURR * Z_IM_CURR, N_FRAC), N_BITS+3);
-      else
-        Z_RE_NEXT <= Z_RE_CURR;
-        Z_IM_NEXT <= Z_IM_CURR;
-        Z_NORM_NEXT <= Z_NORM_CURR;
-      end if;
-    else
-      Z_RE_NEXT <= C_RE_NEXT;
-      Z_IM_NEXT <= C_IM_NEXT;
-      Z_NORM_NEXT <= resize(shift_right(C_RE_NEXT * C_RE_NEXT + C_IM_NEXT * C_IM_NEXT, N_FRAC), N_BITS+3);
-    end if;
-  end process z_computation;
-
-  iter_computation : process (all)
-  begin
-    if (WExS = '0') then
-      if (Z_NORM_CURR < 4*(2**N_FRAC) and
-          ITERxD_CURR < MAX_ITER) then
-        ITERxD_NEXT <= ITERxD_CURR + 1;
-      else
-        ITERxD_NEXT <= ITERxD_CURR;
-      end if;
-    else
-      ITERxD_NEXT <= (others => '0');
-    end if;
-  end process iter_computation;
-
+  -- Iteration loop --
   conv_loop : process (CLKxCI, RSTxRI)
   begin
     if (RSTxRI = '1') then
-      Z_RE_PREV <= C_RE_0;
-      Z_RE_CURR <= C_RE_0;
+      Z_RE_PREV <= resize(C_RE_0, N_BITS+1);
+      Z_RE_CURR <= resize(C_RE_0, N_BITS+1);
 
-      Z_IM_PREV <= C_IM_0;
-      Z_IM_CURR <= C_IM_0;
+      Z_IM_PREV <= resize(C_IM_0, N_BITS+1);
+      Z_IM_CURR <= resize(C_IM_0, N_BITS+1);
 
-      Z_NORM_CURR <= resize(shift_right(C_RE_0 * C_RE_0 + C_IM_0 * C_IM_0, N_FRAC), N_BITS+3);
+      Z_NORM_CURR <= Z_NORM_0;
 
       ITERxD_PREV <= (others => '0');
       ITERxD_CURR <= (others => '0');
@@ -228,14 +193,45 @@ begin
       ITERxD_PREV <= ITERxD_CURR;
       ITERxD_CURR <= ITERxD_NEXT;
 
-      if (Z_NORM_CURR < 4*(2**N_FRAC) and
-          ITERxD_CURR < MAX_ITER) then 
-        WExS <= '0';
-      else
-        WExS <= '1';
-      end if;
+      WExS <= '0' when ((Z_NORM_CURR < 4*(2**N_FRAC)) and (ITERxD_CURR < MAX_ITER)) else '1';
     end if;
   end process conv_loop;
+  
+  -- Re(z), Im(z) computation -- 
+  z_computation : process (all)
+  begin
+    if (WExS = '0') then
+      if (Z_NORM_CURR < 4*(2**N_FRAC) and
+          ITERxD_CURR < MAX_ITER) then
+        Z_RE_NEXT <= resize(shift_right(Z_RE_CURR * Z_RE_CURR - Z_IM_CURR * Z_IM_CURR + C_RE_CURR*(2**N_FRAC), N_FRAC), N_BITS+1);
+        Z_IM_NEXT <= resize(shift_right(2 * Z_RE_CURR * Z_IM_CURR + C_IM_CURR*(2**N_FRAC), N_FRAC), N_BITS+1);
+        Z_NORM_NEXT <= resize(shift_right(Z_RE_CURR * Z_RE_CURR + Z_IM_CURR * Z_IM_CURR, N_FRAC), N_BITS+5);
+      else
+        Z_RE_NEXT <= Z_RE_CURR;
+        Z_IM_NEXT <= Z_IM_CURR;
+        Z_NORM_NEXT <= Z_NORM_CURR;
+      end if;
+    else
+      Z_RE_NEXT <= C_RE_NEXT;
+      Z_IM_NEXT <= C_IM_NEXT;
+      Z_NORM_NEXT <= resize(shift_right(C_RE_NEXT * C_RE_NEXT + C_IM_NEXT * C_IM_NEXT, N_FRAC), N_BITS+5);
+    end if;
+  end process z_computation;
+
+  -- Next iteration computation -- 
+  iter_computation : process (all)
+  begin
+    if (WExS = '0') then
+      if (Z_NORM_CURR < 4*(2**N_FRAC) and
+          ITERxD_CURR < MAX_ITER) then
+        ITERxD_NEXT <= ITERxD_CURR + 1;
+      else
+        ITERxD_NEXT <= ITERxD_CURR;
+      end if;
+    else
+      ITERxD_NEXT <= (others => '0');
+    end if;
+  end process iter_computation;
 
   -- Outputs --
   XxDO <= X_CURR;

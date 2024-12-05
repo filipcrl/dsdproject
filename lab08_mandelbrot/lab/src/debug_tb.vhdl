@@ -17,29 +17,16 @@ architecture behaviour of test_bench is
     signal WExS : std_logic;
     signal XxD : unsigned(COORD_BW - 1 downto 0);
     signal YxD : unsigned(COORD_BW - 1 downto 0);
-    --signal DEBUG_CRxD : signed(N_BITS - 1 downto 0);
-    --signal DEBUG_CMxD : signed(N_BITS - 1 downto 0);
-    --signal DEBUG_ZRxD : signed(N_BITS - 1 downto 0);
-    --signal DEBUG_ZMxD : signed(N_BITS - 1 downto 0);
     signal ITERxD : unsigned(MEM_DATA_BW-1 downto 0);
-    --signal OVERFLOW : std_logic;
 
     component mandelbrot is
         port (
             CLKxCI : in std_logic;
             RSTxRI : in std_logic;
-
             WExSO   : out std_logic;
             XxDO    : out unsigned(COORD_BW - 1 downto 0);
             YxDO    : out unsigned(COORD_BW - 1 downto 0);
-
-            --DEBUG_CRxDO    : out signed(N_BITS - 1 downto 0);
-            --DEBUG_CMxDO    : out signed(N_BITS - 1 downto 0);
-            --DEBUG_ZRxDO    : out signed(N_BITS - 1 downto 0);
-            --DEBUG_ZMxDO    : out signed(N_BITS - 1 downto 0);
-
             ITERxDO   : out unsigned(MEM_DATA_BW-1 downto 0)
-            --DEBUG_OVERFLOW : out std_logic
         );
     end component;
 
@@ -52,12 +39,7 @@ begin
             WExSO => WExS,
             XxDO => XxD,
             YxDO => YxD,
-            --DEBUG_CRxDO => DEBUG_CRxD,
-            --DEBUG_CMxDO => DEBUG_CMxD,
-            --DEBUG_ZRxDO => DEBUG_ZRxD,
-            --DEBUG_ZMxDO => DEBUG_ZMxD,
             ITERxDO => ITERxD
-            --DEBUG_OVERFLOW => OVERFLOW
         );
 
     reset_process : process
@@ -71,19 +53,12 @@ begin
     debug_process : process
     begin
         while true loop
-            
             if (WExS = '1') then
-                    -- report "reset = " & to_string(reset);
                 report "clk = " & to_string(clk);
                 report "WExSO = " & to_string(WExS);
                 report "XxDO = " & integer'image(to_integer(XxD));
                 report "YxD0 = " & integer'image(to_integer(YxD));
-                    --report "DEBUG_CRxDO = " & to_string(DEBUG_CRxD);
-                    --report "DEBUG_CMxDO = " & to_string(DEBUG_CMxD);
-                    --report "DEBUG_ZRxDO = " & to_string(DEBUG_ZRxD);
-                    --report "DEBUG_ZMxDO = " & to_string(DEBUG_ZMxD);
                 report "ITERxDO = " & integer'image(to_integer(ITERxD));
-                --report "DEBUG_OVERFLOW = " & to_string(OVERFLOW);
                 report "=======";
             end if;
             wait for 10 us;

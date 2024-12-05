@@ -127,15 +127,16 @@ begin
     wait until CLKxCI'event and CLKxCI = '1' and RSTxRI = '0';
 
     L1 : loop
-      exit L1 when (XxD = HS_DISPLAY - 1 and YxD = 99);
+      --exit L1 when (XxD = HS_DISPLAY - 1 and YxD = 99);
+      exit L1 when (XxD = HS_DISPLAY - 1 and YxD = 768-1);
 
       --report "XxD = " & to_string(XxD);
       --report "YxD = " & to_string(YxD);
 
       wait until CLKxCI'event and CLKxCI = '1' and WExS = '1';
       
-      report "XxD = " & to_string(XxD);
-      report "YxD = " & to_string(YxD);
+      report "XxD = " & integer'image(to_integer(XxD));
+      report "YxD = " & integer'image(to_integer(YxD));
 
       pixel_count := pixel_count + 1;
       WRITE(img_data_file, to_integer(ITERxD));
