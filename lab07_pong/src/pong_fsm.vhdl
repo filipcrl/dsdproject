@@ -41,11 +41,7 @@ entity pong_fsm is
     -- Ball and plate coordinates
     BallXxDO  : out unsigned(COORD_BW - 1 downto 0);
     BallYxDO  : out unsigned(COORD_BW - 1 downto 0);
-    PlateXxDO : out unsigned(COORD_BW - 1 downto 0)
-    
-     -- VGA coordinates colors
-     VgaXxDI : in unsigned(COORD_BW - 1 downto 0); -- Current VGA X coordinate
-     VgaYxDI : in unsigned(COORD_BW - 1 downto 0); -- Current VGA Y coordinate
+    PlateXxDO : out unsigned(COORD_BW - 1 downto 0);
     
     -- VGA color output
      VgaColor : out std_logic_vector(2 downto 0) 
@@ -55,8 +51,8 @@ end pong_fsm;
 
 architecture rtl of pong_fsm is
 -- Constants
-  constant SCREEN_WIDTH  : integer := x;               -- Screen width
-  constant SCREEN_HEIGHT : integer := y;               -- Screen height
+  constant SCREEN_WIDTH  : integer := 256;               -- Screen width
+  constant SCREEN_HEIGHT : integer := 192;               -- Screen height
   constant BALL_SIZE     : integer := 10;                -- Ball size
   constant PLATE_WIDTH   : integer := 80;                -- Plate width
   constant PLATE_HEIGHT  : integer := 10;                -- Plate height
@@ -75,7 +71,7 @@ architecture rtl of pong_fsm is
 -- ARCHITECTURE BEGIN
 --=============================================================================
 begin
-process(clk, reset)
+process(CLKxCI, RSTxRI)
     begin
 -- TODO: Implement your code here
  if RSTxRI = '1' then
