@@ -39,8 +39,6 @@ entity vga_controller is
     HSxSO : out std_logic;
     VSxSO : out std_logic;
 
-    VSEdgexSO : out std_logic;
-
     -- Data/color output
     RedxSO   : out std_logic_vector(COLOR_BW - 1 downto 0);
     GreenxSO : out std_logic_vector(COLOR_BW - 1 downto 0);
@@ -53,12 +51,114 @@ end vga_controller;
 --=============================================================================
 architecture rtl of vga_controller is
 
+  type VgaHorizontalFSM_Type is (
+    BackPorch, Display, FrontPorch, Pulse
+  );
+
+  type VgaVerticalFSM_Type is (
+    BackPorch, Display, FrontPorch, Pulse
+  );
+
+  signal HStatexDN, HStatexDP : VgaHorizontalFSM_Type;
+  signal VStatexDN, VStatexDP : VgaVerticalFSM_Type;
+
+  signal HCntxDN, HCntxDP   : unsigned(COORD_BW - 1 downto 0);
+  signal VCntxDN, VCntxDP   : unsigned(COORD_BW - 1 downto 0);
+  signal VCntNextxD         : unsigned(COORD_BW - 1 downto 0);
+  signal HPulseTransitionxS : std_logic;
+
 --=============================================================================
 -- ARCHITECTURE BEGIN
 --=============================================================================
 begin
 
--- TODO: Implement your code here
+  process (all)
+  begin
+    HPulseTransitionxS <= '0';
+    HStatexDN <= HStatexDP;
+    HCntxDN <= HCntxDP + 1;
+
+    case HStatexDP is
+      when Pulse =>
+        if (HCntxDP = HS_PULSE - 1) then
+          HStatexDN <= BackPorch;
+          HCntxDN <= (others => '0');
+          HPulseTransitionxS <= '1';
+        end if;
+      when BackPorch =>
+        if (HCntxDP = HS_BACK_PORCH - 1) then
+          HStatexDN <= Display;
+          HCntxDN <= (others => '0');
+        end if;
+      when Display =>
+        if (HCntxDP = HS_DISPLAY - 1) then
+          HStatexDN <= FrontPorch;
+          HCntxDN <= (others => '0');
+        end if;
+      when FrontPorch =>
+        if (HCntxDP = HS_FRONT_PORCH - 1) then
+          HStatexDN <= Pulse;
+          HCntxDN <= (others => '0');
+        end if;
+    end case;
+  end process;
+
+  process (all)
+  begin
+    VStatexDN <= VStatexDP;
+    VCntNextxD <= VCntxDP + 1 when HPulseTransitionxS = '1' else VCntxDP;
+    VCntxDN <= VCntNextxD;
+
+    case VStatexDP is
+      when Pulse =>
+        if (VCntNextxD = VS_PULSE) then
+          VStatexDN <= BackPorch;
+          VCntxDN <= (others => '0');
+        end if;
+      when BackPorch =>
+        if (VCntNextxD = VS_BACK_PORCH) then
+          VStatexDN <= Display;
+          VCntxDN <= (others => '0');
+        end if;
+      when Display =>
+        if (VCntNextxD = VS_DISPLAY) then
+          VStatexDN <= FrontPorch;
+          VCntxDN <= (others => '0');
+        end if;
+      when FrontPorch =>
+        if (VCntNextxD = VS_FRONT_PORCH) then
+          VStatexDN <= Pulse;
+          VCntxDN <= (others => '0');
+        end if;
+    end case;
+  end process;
+
+  process (CLKxCI, RSTxRI)
+  begin
+    if (RSTxRI = '1') then
+      HCntxDP <= (others => '0');
+      VCntxDP <= (others => '0');
+
+      HStatexDP <= Pulse;
+      VStatexDP <= Pulse;
+    elsif (CLKxCI'event and CLKxCI = '1') then
+      HCntxDP <= HCntxDN;
+      VCntxDP <= VCntxDN;
+
+      HStatexDP <= HStatexDN;
+      VStatexDP <= VStatexDN;
+    end if;
+  end process;
+
+  HSxSO <= HS_POLARITY when HStatexDP = Pulse else not(HS_POLARITY);
+  VSxSO <= VS_POLARITY when VStatexDP = Pulse else not(VS_POLARITY);
+
+  XCoordxDO <= HCntxDP when HStatexDP = Display else (others => '0');
+  YCoordxDO <= VCntxDP when VStatexDP = Display else (others => '0');
+
+  RedxSO   <= RedxSI when (HStatexDP = Display) and (VStatexDP = Display) else "0000";
+  GreenxSO <= GreenxSI when (HStatexDP = Display) and (VStatexDP = Display) else "0000";
+  BluexSO  <= BluexSI when (HStatexDP = Display) and (VStatexDP = Display) else "0000"; 
 
 end rtl;
 --=============================================================================
