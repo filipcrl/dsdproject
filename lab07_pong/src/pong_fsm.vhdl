@@ -47,23 +47,33 @@ end pong_fsm;
 -- TODO: Implement your code here
 
 architecture rtl of pong_fsm is
-  -- Constants --
+  -- Display constants --
   constant SCREEN_WIDTH  : integer := 256;
   constant SCREEN_HEIGHT : integer := 192;
 
-  constant START_X : unsigned(COORD_BW-1 downto 0) 
+  -- Ball Constants --
+  constant BALL_START_X : unsigned(COORD_BW-1 downto 0) 
     := to_unsigned(SCREEN_WIDTH / 2, COORD_BW); 
-  constant START_Y : unsigned(COORD_BW-1 downto 0) 
+  constant BALL_START_Y : unsigned(COORD_BW-1 downto 0) 
     := to_unsigned(SCREEN_HEIGHT / 2, COORD_BW); 
-
-  constant MIN_X : unsigned(COORD_BW-1 downto 0) 
+  constant BALL_MIN_X : unsigned(COORD_BW-1 downto 0) 
     := to_unsigned(BALL_WIDTH / 2, COORD_BW); 
-  constant MAX_X : unsigned(COORD_BW-1 downto 0) 
+  constant BALL_MAX_X : unsigned(COORD_BW-1 downto 0) 
     := to_unsigned(SCREEN_WIDTH - BALL_WIDTH / 2, COORD_BW); 
-  constant MIN_Y : unsigned(COORD_BW-1 downto 0) 
+  constant BALL_MIN_Y : unsigned(COORD_BW-1 downto 0) 
     := to_unsigned(BALL_WIDTH / 2, COORD_BW); 
-  constant MAX_Y : unsigned(COORD_BW-1 downto 0) 
+  constant BALL_MAX_Y : unsigned(COORD_BW-1 downto 0) 
     := to_unsigned(SCREEN_HEIGHT - BALL_WIDTH / 2, COORD_BW); 
+
+  -- Plate constants --
+  constant PLATE_START_X : unsigned(COORD_BW-1 downto 0) 
+    := to_unsigned(SCREEN_WIDTH / 2, COORD_BW); 
+  constant PLATE_START_Y : unsigned(COORD_BW-1 downto 0) 
+    := to_unsigned(PLATE_HEIGHT / 2, COORD_BW); 
+  constant PLATE_MIN_X : unsigned(COORD_BW-1 downto 0) 
+    := to_unsigned(PLATE_WIDTH / 2, COORD_BW); 
+  constant PLATE_MAX_X : unsigned(COORD_BW-1 downto 0) 
+    := to_unsigned(SCREEN_WIDTH - PLATE_WIDTH / 2, COORD_BW); 
     
   -- Signals for game state
   signal BallXxDP, BallXxDN : unsigned(COORD_BW - 1 downto 0);
@@ -74,7 +84,7 @@ architecture rtl of pong_fsm is
   signal BallDirYxDP, BallDirYxDN : std_logic;
 
   -- Plate position --
-  signal PlateX, PlateY : unsigned(COORD_BW - 1 downto 0);
+  signaL PlateXxDP, PlateXxDN : unsigned(COORD_BW - 1 downto 0);
 begin
   -- Ball Movement --
   process(all)
@@ -84,14 +94,14 @@ begin
     if (VSEdgexSI = '1') then
       if (BallDirXxDP='1') then
         BallXxDN <= unsigned( signed(BallXxDP) + BALL_STEP_X );
-        if (unsigned( signed(BallXxDP) + BALL_STEP_X ) >= MAX_X) then
-          BallXxDN <= MAX_X;
+        if (signed(BallXxDP) + BALL_STEP_X >= signed(BALL_MAX_X)) then
+          BallXxDN <= BALL_MAX_X;
           BallDirXxDN <= NOT BallDirXxDP;
         end if;
       else
         BallXxDN <= unsigned( signed(BallXxDP) - BALL_STEP_X );
-        if (unsigned( signed(BallXxDP) - BALL_STEP_X ) <= MIN_X) then
-          BallXxDN <= MIN_X;
+        if (signed(BallXxDP) - BALL_STEP_X <= signed(BALL_MIN_X)) then
+          BallXxDN <= BALL_MIN_X;
           BallDirXxDN <= NOT BallDirXxDP;
         end if;
       end if;
@@ -102,15 +112,35 @@ begin
     if (VSEdgexSI = '1') then
       if (BallDirYxDP='1') then
         BallYxDN <= unsigned( signed(BallYxDP) + BALL_STEP_Y );
-        if (unsigned( signed(BallYxDP) + BALL_STEP_Y ) >= MAX_Y) then
-          BallYxDN <= MAX_Y;
+        if (signed(BallYxDP) + BALL_STEP_Y >= signed(BALL_MAX_Y)) then
+          BallYxDN <= BALL_MAX_Y;
           BallDirYxDN <= NOT BallDirYxDP;
         end if;
       else
         BallYxDN <= unsigned( signed(BallYxDP) - BALL_STEP_Y );
-        if (unsigned( signed(BallYxDP) - BALL_STEP_Y ) <= MIN_Y) then
-          BallYxDN <= MIN_Y;
+        if (signed(BallYxDP) - BALL_STEP_Y <= signed(BALL_MIN_Y)) then
+          BallYxDN <= BALL_MIN_Y;
           BallDirYxDN <= NOT BallDirYxDP;
+        end if;
+      end if;
+    end if;
+  end process;
+  
+  -- Plate Mouvement --
+  process(all)
+  begin
+    PlateXxDN <= PlateXxDP;
+    if (VSEdgexSI = '1') then
+      if (RightxSI = '1') then
+        PlateXxDN <= unsigned( signed(PlateXxDP) + PLATE_STEP_X );
+        if (signed(PlateXxDP) + PLATE_STEP_X >= signed(PLATE_MAX_X)) then
+          PlateXxDN <= PLATE_MAX_X;
+        end if;
+      end if;
+      if (LeftxSI = '1') then
+        PlateXxDN <= unsigned( signed(PlateXxDP) - PLATE_STEP_X );
+        if (signed(PlateXxDP) - PLATE_STEP_X <= signed(PLATE_MIN_X)) then
+          PlateXxDN <= PLATE_MIN_X;
         end if;
       end if;
     end if;
@@ -119,18 +149,21 @@ begin
   process(CLKxCI, RSTxRI)
     begin
     if RSTxRI = '1' then
-      BallXxDP <= START_X;
-      BallYxDP <= START_Y;
+      BallXxDP <= BALL_START_X;
+      BallYxDP <= BALL_START_Y;
 
       BallDirXxDP <= '1';
       BallDirYxDP <= '1';
-      --PlateX <= to_unsigned((SCREEN_WIDTH - PLATE_WIDTH) / 2, COORD_BW);
+
+      PlateXxDP <= PLATE_START_X;
     elsif rising_edge(CLKxCI) then
       BallXxDP <= BallXxDN;
       BallYxDP <= BallYxDN;
 
       BallDirXxDP <= BallDirXxDN;
       BallDirYxDP <= BallDirYxDN;
+
+      PlateXxDP <= PlateXxDN;
         -- Ball collision with paddle
         --if BallY >= to_unsigned(SCREEN_HEIGHT - PLATE_HEIGHT - BALL_WIDTH, COORD_BW) and
         --   BallX + to_unsigned(BALL_WIDTH, COORD_BW) >= PlateX and
@@ -146,13 +179,6 @@ begin
         --  BallDirX <= 1;
         --  BallDirY <= 1;
         --end if;
-
-        -- Plate movement 
-        --if LeftxSI = '1' and PlateX > to_unsigned(0, COORD_BW) then
-        --  PlateX <= PlateX - to_unsigned(PLATE_SPEED, COORD_BW); -- Move paddle left
-        --elsif RightxSI = '1' and PlateX < to_unsigned(SCREEN_WIDTH - PLATE_WIDTH, COORD_BW) then
-        --  PlateX <= PlateX + to_unsigned(PLATE_SPEED, COORD_BW); -- Move paddle right
-        --end if;
     end if;
   end process;
 
@@ -161,7 +187,7 @@ begin
 --=============================================================================
 
  
-  -- Graphics 
+-- Graphics 
 --  process (VgaXxDI, VgaYxDI, BallX, BallY, PlateX)
 --  begin
 --    VgaColXxDO <= "000"; --  backgrd color black
@@ -181,6 +207,6 @@ begin
   -- Output psoitions
 BallXxDO <= BallXxDP;  
 BallYxDO <= BallYxDP;  
-PlateXxDO <= PlateX; 
+PlateXxDO <= PlateXxDP; 
 
 end rtl;

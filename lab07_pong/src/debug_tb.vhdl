@@ -66,6 +66,8 @@ begin
     debug_process : process
     begin
         VSEdgexS <= '1';
+        --RightxS <= '1';
+        --LeftxS <= '1';
         while true loop
             report "clk = " & to_string(clk);
             report "BallXxD = " & integer'image(to_integer(BallXxD));
