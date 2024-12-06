@@ -14,7 +14,7 @@ function [img, img_color] = ViewTBImgFile(FileName, IterLim)
   end
 
   ImgWidth  = 1024;
-  ImgHeight = 768;
+  ImgHeight = 100;
 
   TBImgFile = fopen(FileName);
 

@@ -1,12 +1,15 @@
 v 4
-file . "mandelbrot_tb.vhdl" "94eae8f941629d03f1a64d5a48d49bc1bfbf7811" "20241205090453.174":
-  entity mandelbrot_tb at 5( 208) + 0 on 894;
-  architecture rtl of mandelbrot_tb at 32( 1073) + 0 on 895;
-file . "dsd_prj_pkg.vhdl" "cf14b3e53bc8547e8c4b03a52c77d48b8372641a" "20241205090453.131":
-  package dsd_prj_pkg at 6( 207) + 0 on 891;
-file . "mandelbrot.vhdl" "445d46109055ad74f5260020c729c92ace1fbcbc" "20241205090453.154":
-  entity mandelbrot at 5( 205) + 0 on 892;
-  architecture rtl of mandelbrot at 39( 1276) + 0 on 893;
-file . "debug_tb.vhdl" "b4399c986b2a62a58594a8d74633696d53354e10" "20241204120916.990":
-  entity test_bench at 1( 0) + 0 on 869;
-  architecture behaviour of test_bench at 13( 182) + 0 on 870;
+file . "mandelbrot_test.vhdl" "405aef291dc25ad790281ebbfb7912de7039bdc4" "20241206084634.594":
+  entity mandelbrott at 5( 205) + 0 on 963;
+  architecture rtl of mandelbrott at 39( 1295) + 0 on 964;
+file . "debug_tb.vhdl" "b4399c986b2a62a58594a8d74633696d53354e10" "20241206125244.236":
+  entity test_bench at 1( 0) + 0 on 1174;
+  architecture behaviour of test_bench at 13( 182) + 0 on 1175;
+file . "dsd_prj_pkg.vhdl" "cf14b3e53bc8547e8c4b03a52c77d48b8372641a" "20241206125314.162":
+  package dsd_prj_pkg at 6( 207) + 0 on 1176;
+file . "mandelbrot_tb.vhdl" "0b4948755afba6e18c4479b0c28e53d83f5d0e16" "20241206125314.216":
+  entity mandelbrot_tb at 5( 208) + 0 on 1179;
+  architecture rtl of mandelbrot_tb at 32( 1073) + 0 on 1180;
+file . "mandelbrot.vhdl" "6e802ad61303e3cf7edcf4fcf4b74843e17650d9" "20241206125314.191":
+  entity mandelbrot at 5( 205) + 0 on 1177;
+  architecture rtl of mandelbrot at 39( 1276) + 0 on 1178;
