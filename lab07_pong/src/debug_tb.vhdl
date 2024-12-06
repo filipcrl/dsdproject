@@ -72,7 +72,7 @@ begin
             report "clk = " & to_string(clk);
             report "BallXxD = " & integer'image(to_integer(BallXxD));
             report "BallYxD = " & integer'image(to_integer(BallYxD));
-            --report "PlateXxDO = " & integer'image(to_integer(PlateXxD));
+            report "PlateXxDO = " & integer'image(to_integer(PlateXxD));
             report "=======";
             wait for 10 us;
         end loop;
