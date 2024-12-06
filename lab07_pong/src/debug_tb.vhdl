@@ -22,7 +22,7 @@ architecture behaviour of test_bench is
     signal BallXxD  : unsigned(COORD_BW - 1 downto 0);
     signal BallYxD  : unsigned(COORD_BW - 1 downto 0);
     signal PlateXxD : unsigned(COORD_BW - 1 downto 0);
-    signal VgaColorxD : std_logic_vector(2 downto 0);
+    signal VgaColXxD : std_logic_vector(2 downto 0);
 
     component pong_fsm is
         port (
@@ -36,7 +36,7 @@ architecture behaviour of test_bench is
           BallXxDO  : out unsigned(COORD_BW - 1 downto 0);
           BallYxDO  : out unsigned(COORD_BW - 1 downto 0);
           PlateXxDO : out unsigned(COORD_BW - 1 downto 0);
-          VgaColor : out std_logic_vector(2 downto 0) 
+          VgaColXxDO : out std_logic_vector(2 downto 0) 
         );
     end component;
 begin
@@ -52,7 +52,7 @@ begin
             BallXxDO => BallXxD,
             BallYxDO => BallYxD,
             PlateXxDO => PlateXxD,
-            VgaColor => VgaColorxD 
+            VgaColXxDO => VgaColXxD 
         );
 
     reset_process : process
@@ -65,11 +65,12 @@ begin
    
     debug_process : process
     begin
+        VSEdgexS <= '1';
         while true loop
             report "clk = " & to_string(clk);
             report "BallXxD = " & integer'image(to_integer(BallXxD));
             report "BallYxD = " & integer'image(to_integer(BallYxD));
-            report "PlateXxDO = " & integer'image(to_integer(PlateXxD));
+            --report "PlateXxDO = " & integer'image(to_integer(PlateXxD));
             report "=======";
             wait for 10 us;
         end loop;
