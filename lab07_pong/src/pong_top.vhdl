@@ -244,7 +244,7 @@ begin
 
   -- Port B
   ENBxS     <= '1';
-  RdAddrBxD <= ; -- TODO: Map the X and Y coordinates to the address of the memory
+  RdAddrBxD <= std_logic_vector(resize((HS_DISPLAY / 4) * (YCoordxD / 4) + (XCoordxD / 4), RdAddrBxD'length));
 
   BGRedxS   <= DOUTBxD(3 * COLOR_BW - 1 downto 2 * COLOR_BW);
   BGGreenxS <= DOUTBxD(2 * COLOR_BW - 1 downto 1 * COLOR_BW);

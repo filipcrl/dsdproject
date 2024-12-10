@@ -39,6 +39,9 @@ entity vga_controller is
     HSxSO : out std_logic;
     VSxSO : out std_logic;
 
+    -- Edge output
+    VSEdgexSO : out std_logic;
+
     -- Data/color output
     RedxSO   : out std_logic_vector(COLOR_BW - 1 downto 0);
     GreenxSO : out std_logic_vector(COLOR_BW - 1 downto 0);
@@ -155,6 +158,8 @@ begin
 
   XCoordxDO <= HCntxDP when HStatexDP = Display else (others => '0');
   YCoordxDO <= VCntxDP when VStatexDP = Display else (others => '0');
+
+  VSEdgexSO <= '1' when (VStatexDP = Pulse) and (VCntxDN = 0) else '0';
 
   RedxSO   <= RedxSI when (HStatexDP = Display) and (VStatexDP = Display) else "0000";
   GreenxSO <= GreenxSI when (HStatexDP = Display) and (VStatexDP = Display) else "0000";
