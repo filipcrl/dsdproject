@@ -20,7 +20,7 @@ def process_image(image_path):
 
         # Pack the components into 12 bits in RBG order
         # Bits 11-8: R, Bits 7-4: B, Bits 3-0: G
-        packed_value = (r4 << 8) | (b4 << 4) | g4
+        packed_value = (r4 << 8) | (g4 << 4) | b4
 
         # Convert the packed value to a 3-digit hex string
         hex_str = format(packed_value, '03x')  # Lowercase hex, pad with zeros if necessary

@@ -64,17 +64,6 @@ architecture rtl of mandelbrot_top is
 	signal DINAxD : std_logic_vector(MEM_DATA_BW - 1 downto 0);
 	signal DOUTBxD : std_logic_vector(MEM_DATA_BW - 1 downto 0);
 
-	-- blk_mem_gen_1
-  signal RdAddrSpritexD : std_logic_vector(12 - 1 downto 0);
-  signal DOutSpritexD : std_logic_vector(MEM_DATA_BW - 1 downto 0);
-	signal SpriteRedxS : std_logic_vector(COLOR_BW - 1 downto 0); -- Color to VGA controller
-	signal SpriteGreenxS : std_logic_vector(COLOR_BW - 1 downto 0);
-	signal SpriteBluexS : std_logic_vector(COLOR_BW - 1 downto 0);
-
-	signal BGRedxS : std_logic_vector(COLOR_BW - 1 downto 0); -- Background colors from the memory
-	signal BGGreenxS : std_logic_vector(COLOR_BW - 1 downto 0);
-	signal BGBluexS : std_logic_vector(COLOR_BW - 1 downto 0);
-
 	-- vga_controller
 	signal RedxS : std_logic_vector(COLOR_BW - 1 downto 0); -- Color to VGA controller
 	signal GreenxS : std_logic_vector(COLOR_BW - 1 downto 0);
@@ -89,9 +78,6 @@ architecture rtl of mandelbrot_top is
 	signal BallXxD : unsigned(COORD_BW - 1 downto 0); -- Coordinates of ball and plate
 	signal BallYxD : unsigned(COORD_BW - 1 downto 0);
 	signal PlateXxD : unsigned(COORD_BW - 1 downto 0);
-
-	signal DrawBallxS : std_logic; -- If 1, draw the ball
-	signal DrawPlatexS : std_logic; -- If 1, draw the plate
 
 	-- mandelbrot
 	signal MandelbrotWExS : std_logic; -- If 1, Mandelbrot writes
@@ -127,17 +113,6 @@ architecture rtl of mandelbrot_top is
 			doutb  : out std_logic_vector(11 downto 0)
 		);
 	end component;
-
-  COMPONENT blk_mem_gen_1
-    PORT (
-      clka : IN STD_LOGIC;
-      ena : IN STD_LOGIC;
-      wea : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
-      addra : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
-      dina : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
-      douta : OUT STD_LOGIC_VECTOR(11 DOWNTO 0) 
-    );
-  END COMPONENT;
 
 	component vga_controller is
 		port 
@@ -204,6 +179,28 @@ architecture rtl of mandelbrot_top is
 		);
 	end component mandelbrot;
 
+  component compositor is
+    port (
+      CLKxCI    : in std_logic;
+      RSTxRI    : in std_logic;
+
+      VSEdgexSI : in std_logic;
+
+      XCoordxDI : in unsigned(COORD_BW - 1 downto 0);
+      YCoordxDI : in unsigned(COORD_BW - 1 downto 0);
+
+      BallXxDI  : in unsigned(COORD_BW - 1 downto 0);
+      BallYxDI  : in unsigned(COORD_BW - 1 downto 0);
+      PlateXxDI : in unsigned(COORD_BW - 1 downto 0);
+
+      BgDOutxDI : in std_logic_vector(MEM_DATA_BW - 1 downto 0);
+
+      RedxSO    : out std_logic_vector(COLOR_BW - 1 downto 0);
+      GreenxSO  : out std_logic_vector(COLOR_BW - 1 downto 0);
+      BluexSO   : out std_logic_vector(COLOR_BW - 1 downto 0)
+    );
+  end component;
+
 	--=============================================================================
 	-- ARCHITECTURE BEGIN
 	--=============================================================================
@@ -234,16 +231,6 @@ begin
 		addrb  => RdAddrBxD, 
 		doutb  => DOUTBxD
 	);
-
-  i_blk_mem_gen_1: blk_mem_gen_1
-  PORT MAP (
-    clka => CLK75xC,
-    ena => '1',
-    wea => "0",
-    addra => RdAddrSpritexD,
-    dina => (others => '0'),
-    douta => DOutSpritexD
-  );
 
 	i_vga_controller : vga_controller
 	port map
@@ -299,6 +286,27 @@ begin
 		ITERxDO  => MandelbrotITERxD
 	);
 
+  i_compositor : compositor
+    port map (
+      CLKxCI    => CLK75xC,
+      RSTxRI    => RSTxRI,
+
+      VSEdgexSI => VSEdgexS,
+
+      XCoordxDI => XCoordxD,
+      YCoordxDI => YCoordxD,
+
+      BallXxDI  => BallXxD,
+      BallYxDI  => BallYxD,
+      PlateXxDI => PlateXxD,
+
+      BgDOutxDI => DOUTBxD,
+
+      RedxSO    => RedxS,
+      GreenxSO  => GreenxS,
+      BluexSO   => BluexS
+    );
+
 	--=============================================================================
 	-- MEMORY SIGNAL MAPPING
 	--=============================================================================
@@ -312,43 +320,6 @@ begin
 	-- Port B
 	ENBxS <= '1';
 	RdAddrBxD <= std_logic_vector(resize((HS_DISPLAY / 4) * (YCoordxD / 4) + (XCoordxD / 4), RdAddrBxD'length));
-
-    RdAddrSpritexD <= std_logic_vector(resize((YCoordxD mod 16) * 16 + (XCoordxD mod 16), RdAddrSpritexD'length));
-
-	--=============================================================================
-	-- SPRITE SIGNAL MAPPING
-	--=============================================================================
-
-	BGRedxS <= DOUTBxD(3 * COLOR_BW - 1 downto 2 * COLOR_BW);
-	BGGreenxS <= DOUTBxD(2 * COLOR_BW - 1 downto 1 * COLOR_BW);
-	BGBluexS <= DOUTBxD(1 * COLOR_BW - 1 downto 0 * COLOR_BW);
-
-	SpriteRedxS <= DOutSpritexD(3 * COLOR_BW - 1 downto 2 * COLOR_BW);
-	SpriteGreenxS <= DOutSpritexD(2 * COLOR_BW - 1 downto 1 * COLOR_BW);
-	SpriteBluexS <= DOutSpritexD(1 * COLOR_BW - 1 downto 0 * COLOR_BW);
-
-	DrawBallxS <= '1' when ((signed(XCoordxD) - signed(BallXxD)) * (signed(XCoordxD) - signed(BallXxD)) +
-		(signed(YCoordxD) - signed(BallYxD)) * (signed(YCoordxD) - signed(BallYxD))) <= (BALL_WIDTH/2) * (BALL_WIDTH/2)
-		else '0';
-
-	DrawPlatexS <= '1' when (XCoordxD >= PlateXxD - PLATE_WIDTH/2) and
-	               (XCoordxD <= PlateXxD + PLATE_WIDTH/2) and
-	               (YCoordxD >= VS_DISPLAY - PLATE_HEIGHT) and
-	               (YCoordxD <= VS_DISPLAY)
-	               else '0';
-
-	RedxS <= SpriteRedxS when DrawBallxS = '1' else
-	         SpriteRedxS when DrawPlatexS = '1' else
-	         BGRedxS;
-
-	GreenxS <= SpriteGreenxS when DrawBallxS = '1' else
-	           SpriteGreenxS when DrawPlatexS = '1' else
-	           BGGreenxS;
-
-	BluexS <= SpriteBluexS when DrawBallxS = '1' else
-	          SpriteBluexS when DrawPlatexS = '1' else
-	          BGBluexS;
-
 end rtl;
 --=============================================================================
 -- ARCHITECTURE END
