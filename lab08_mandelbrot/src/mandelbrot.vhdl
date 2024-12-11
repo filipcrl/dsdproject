@@ -66,9 +66,9 @@ architecture rtl of mandelbrot is
   signal C_IM_INCxDP, C_IM_INCxDN : signed(N_BITS_SHORT-1 downto 0);
 
   constant C_RE_0_ANIM_START : signed(N_BITS_SHORT-1 downto 0) 
-    := to_signed(-5 * 2**(N_FRAC), N_BITS_SHORT);
+    := to_signed(-6 * 2**(N_FRAC), N_BITS_SHORT);
   constant C_RE_0_ANIM_END : signed(N_BITS_SHORT-1 downto 0) 
-    := to_signed(1 * 2**(N_FRAC), N_BITS_SHORT);
+    := to_signed(2 * 2**(N_FRAC), N_BITS_SHORT);
 
   -- X --
   signal XxDPrv, XxDP, XxDN : unsigned(COORD_BW-1 downto 0);
@@ -195,7 +195,7 @@ begin
 
     if (YxDP=VS_MANDELBROT-1) and (XxDP=HS_MANDELBROT-2) then
       if C_RE_0xDP < C_RE_0_ANIM_END then
-        C_RE_0xDN <= C_RE_0xDP + to_signed(1*2**(-11+N_FRAC), N_BITS);
+        C_RE_0xDN <= C_RE_0xDP + to_signed(1*2**(-12+N_FRAC), N_BITS);
       else
         C_RE_0xDN <= C_RE_0_ANIM_START;
       end if;
