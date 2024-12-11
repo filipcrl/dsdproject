@@ -159,7 +159,7 @@ begin
   XCoordxDO <= HCntxDP when HStatexDP = Display else (others => '0');
   YCoordxDO <= VCntxDP when VStatexDP = Display else (others => '0');
 
-  VSEdgexSO <= '1' when (VStatexDP = Pulse) and (VCntxDN = 0) else '0';
+  VSEdgexSO <= '1' when (VStatexDP = Pulse) and (HCntxDP = 0) and (VCntxDP = 0) else '0';
 
   RedxSO   <= RedxSI when (HStatexDP = Display) and (VStatexDP = Display) else "0000";
   GreenxSO <= GreenxSI when (HStatexDP = Display) and (VStatexDP = Display) else "0000";

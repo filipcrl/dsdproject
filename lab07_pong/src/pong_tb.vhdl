@@ -100,7 +100,7 @@ begin
       VSEdgexS <= '0';
       counter := 0;
     elsif rising_edge(clk) then
-      if counter = 2 then
+      if counter = 5 then
         VSEdgexS <= '1';
         counter := 0;
       else

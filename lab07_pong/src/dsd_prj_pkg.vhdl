@@ -44,12 +44,12 @@ package dsd_prj_pkg is
   constant MEM_DATA_BW : natural := 12; -- 3 * COLOR_BW
 
   -- Pong parameters (in pixels)
-  constant BALL_WIDTH   : natural := 10;
-  constant BALL_HEIGHT  : natural := 10;
-  constant BALL_STEP_X  : natural := 2;
-  constant BALL_STEP_Y  : natural := 2;
+  constant BALL_WIDTH   : natural := 20;
+  constant BALL_HEIGHT  : natural := 20;
+  constant BALL_STEP_X  : natural := 1;
+  constant BALL_STEP_Y  : natural := 1;
   constant PLATE_WIDTH  : natural := 70;
   constant PLATE_HEIGHT : natural := 10;
-  constant PLATE_STEP_X : natural := 40;
+  constant PLATE_STEP_X : natural := 1;
 
 end package dsd_prj_pkg;

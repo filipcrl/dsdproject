@@ -250,8 +250,8 @@ begin
 	BGBluexS <= DOUTBxD(1 * COLOR_BW - 1 downto 0 * COLOR_BW);
 
 	-- Ball drawing
-	DrawBallxS <= '1' when ((XCoordxD - BallXxD) * (XCoordxD - BallXxD) +
-		(YCoordxD - BallYxD) * (YCoordxD - BallYxD)) <= (BALL_WIDTH/2) * (BALL_WIDTH/2)
+	DrawBallxS <= '1' when ((signed(XCoordxD) - signed(BallXxD)) * (signed(XCoordxD) - signed(BallXxD)) +
+		(signed(YCoordxD) - signed(BallYxD)) * (signed(YCoordxD) - signed(BallYxD))) <= (BALL_WIDTH/2) * (BALL_WIDTH/2)
 		else '0';
 
 	-- Paddle drawing
