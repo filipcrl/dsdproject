@@ -84,8 +84,9 @@ begin
 		else BallYxDP - BALL_STEP_Y;
 
 	PlateXNextxD <= PlateXxDP + PLATE_STEP_X when RightxSI = '1' else
-		PlateXxDP - PLATE_STEP_X when LeftxSI else
-		PlateXxDP;
+		PlateXxDP - PLATE_STEP_X when LeftxSI = '1' and PlateXxDP >= PLATE_STEP_X else
+    PLATE_MIN_X when LeftxSI = '1' else
+    PlateXxDP;
 
 	process (all)
 	begin
@@ -136,6 +137,7 @@ begin
 				(BallXNextxD + BALL_WIDTH / 2 >= PlateXxDP - PLATE_WIDTH / 2) and
 				(BallXNextxD - BALL_WIDTH / 2 <= PlateXxDP + PLATE_WIDTH / 2) then
 				BallDirYxDN <= not BallDirYxDP;
+        BallYxDN <= to_unsigned(VS_DISPLAY - PLATE_HEIGHT - BALL_HEIGHT / 2, BallYxDN'length);
 			end if;
 
 			-- Ball lost

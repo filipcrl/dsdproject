@@ -83,6 +83,9 @@ architecture rtl of mandelbrot_top is
 	signal BallYxD : unsigned(COORD_BW - 1 downto 0);
 	signal PlateXxD : unsigned(COORD_BW - 1 downto 0);
 
+	signal DrawBallxS : std_logic; -- If 1, draw the ball
+	signal DrawPlatexS : std_logic; -- If 1, draw the plate
+
 	-- mandelbrot
 	signal MandelbrotWExS : std_logic; -- If 1, Mandelbrot writes
 	signal MandelbrotXxD : unsigned(COORD_BW - 1 downto 0);
@@ -275,7 +278,7 @@ begin
 	-- Port A
 	ENAxS <= MandelbrotWExS;
 	WEAxS <= (others => MandelbrotWExS);
-	WrAddrAxD <= MandelbrotYxD * (HS_DISPLAY / 4) + MandelbrotXxD;
+	WrAddrAxD <= std_logic_vector(resize(MandelbrotYxD * (HS_DISPLAY / 4) + MandelbrotXxD, WrAddrAxD'length));
 	DINAxD <= std_logic_vector(MandelbrotITERxD);
 
 	-- Port B
@@ -290,9 +293,9 @@ begin
 	BGGreenxS <= DOUTBxD(2 * COLOR_BW - 1 downto 1 * COLOR_BW);
 	BGBluexS <= DOUTBxD(1 * COLOR_BW - 1 downto 0 * COLOR_BW);
 
-	DrawBallxS <= '1' when ((XCoordxD - BallXxD) * (XCoordxD - BallXxD) + 
-	              (YCoordxD - BallYxD) * (YCoordxD - BallYxD)) <= (BALL_WIDTH/2) * (BALL_WIDTH/2)
-	              else '0';
+	DrawBallxS <= '1' when ((signed(XCoordxD) - signed(BallXxD)) * (signed(XCoordxD) - signed(BallXxD)) +
+		(signed(YCoordxD) - signed(BallYxD)) * (signed(YCoordxD) - signed(BallYxD))) <= (BALL_WIDTH/2) * (BALL_WIDTH/2)
+		else '0';
 
 	DrawPlatexS <= '1' when (XCoordxD >= PlateXxD - PLATE_WIDTH/2) and
 	               (XCoordxD <= PlateXxD + PLATE_WIDTH/2) and
