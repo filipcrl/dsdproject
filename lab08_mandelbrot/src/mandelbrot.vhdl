@@ -59,11 +59,16 @@ architecture rtl of mandelbrot is
       return resize(shift_right(SIGNED_IN, N_FRAC_CUT), N_BITS_OUT);
   end function reshape;
 
-  -- Initial values for zoom  --
+  -- Initial values for mandelbrot animation  --
   signal C_RE_0xDP, C_RE_0xDN : signed(N_BITS_SHORT-1 downto 0);
   signal C_IM_0xDP, C_IM_0xDN : signed(N_BITS_SHORT-1 downto 0);
   signal C_RE_INCxDP, C_RE_INCxDN : signed(N_BITS_SHORT-1 downto 0);
   signal C_IM_INCxDP, C_IM_INCxDN : signed(N_BITS_SHORT-1 downto 0);
+
+  constant C_RE_0_ANIM_START : signed(N_BITS_SHORT-1 downto 0) 
+    := to_signed(-5 * 2**(N_FRAC), N_BITS_SHORT);
+  constant C_RE_0_ANIM_END : signed(N_BITS_SHORT-1 downto 0) 
+    := to_signed(1 * 2**(N_FRAC), N_BITS_SHORT);
 
   -- X --
   signal XxDPrv, XxDP, XxDN : unsigned(COORD_BW-1 downto 0);
@@ -88,7 +93,7 @@ architecture rtl of mandelbrot is
 
   -- Default norm --
   constant Z_NORM_0 : signed(N_BITS_LONG-1 downto 0) :=
-    reshape(C_RE_0 * C_RE_0 + C_IM_0 * C_IM_0, N_FRAC, N_BITS_LONG);
+    reshape(C_RE_0_ANIM_START * C_RE_0_ANIM_START + C_IM_0 * C_IM_0, N_FRAC, N_BITS_LONG);
 
   -- Iteration Number --
   signal ITERxDPrev, ITERxDP, ITERxDN : unsigned(MEM_DATA_BW-1 downto 0);
@@ -106,13 +111,13 @@ begin
       YxDPrv <= (others => '0');
       YxDP <= (others => '0');
 
-      CRExDPrev <= resize(C_RE_0, N_BITS_SHORT);
-      CRExDP <= resize(C_RE_0, N_BITS_SHORT);
+      CRExDPrev <= resize(C_RE_0_ANIM_START, N_BITS_SHORT);
+      CRExDP <= resize(C_RE_0_ANIM_START, N_BITS_SHORT);
 
       CIMxDPrev <= resize(C_IM_0, N_BITS_SHORT);
       CIMxDP <= resize(C_IM_0, N_BITS_SHORT);
 
-      C_RE_0xDP <= resize(C_RE_0, N_BITS_SHORT);
+      C_RE_0xDP <= resize(C_RE_0_ANIM_START, N_BITS_SHORT);
       C_IM_0xDP <= resize(C_IM_0, N_BITS_SHORT);
       C_RE_INCxDP <= resize(C_RE_INC_LR, N_BITS_SHORT);
       C_IM_INCxDP <= resize(C_IM_INC_LR, N_BITS_SHORT);
@@ -189,17 +194,20 @@ begin
     C_IM_INCxDN <= C_IM_INCxDP;
 
     if (YxDP=VS_MANDELBROT-1) and (XxDP=HS_MANDELBROT-2) then
-      C_RE_0xDN <= C_RE_0xDP + to_signed(1 * 2**(-12+N_FRAC), N_BITS);
+      if C_RE_0xDP < C_RE_0_ANIM_END then
+        C_RE_0xDN <= C_RE_0xDP + to_signed(1*2**(-11+N_FRAC), N_BITS);
+      else
+        C_RE_0xDN <= C_RE_0_ANIM_START;
+      end if;
     end if;
-
   end process;
 
   -- Iteration loop --
   process (CLKxCI, RSTxRI)
   begin
     if (RSTxRI = '1') then
-      ZRExDPrev <= resize(C_RE_0, N_BITS_SHORT);
-      ZRExDP <= resize(C_RE_0, N_BITS_SHORT);
+      ZRExDPrev <= resize(C_RE_0_ANIM_START, N_BITS_SHORT);
+      ZRExDP <= resize(C_RE_0_ANIM_START, N_BITS_SHORT);
 
       ZIMxDPrev <= resize(C_IM_0, N_BITS_SHORT);
       ZIMxDP <= resize(C_IM_0, N_BITS_SHORT);
