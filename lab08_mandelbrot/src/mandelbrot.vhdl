@@ -40,6 +40,14 @@ architecture rtl of mandelbrot is
   -- Format -- 
   constant N_BITS_SHORT : natural := N_BITS + 1;
   constant N_BITS_LONG : natural := N_BITS + 5;
+
+  -- Memory size --
+  constant HS_MANDELBROT     : natural   := HS_DISPLAY/4;
+  constant VS_MANDELBROT     : natural   := VS_DISPLAY/4;
+
+  -- 256x256 Increment Low res --
+  constant C_RE_INC_LR : signed(N_BITS - 1 downto 0) := to_signed(3 * 2**(-8 + N_FRAC), N_BITS); -- Q3.15
+  constant C_IM_INC_LR : signed(N_BITS - 1 downto 0) := to_signed(5 * 2**(-9 + N_FRAC), N_BITS); -- Q3.15
   
   -- Reshape signed types -- 
   function reshape(
@@ -118,7 +126,7 @@ begin
   XxDN <= XxDP;
   if (WExS='1') then
     XxDN <= XxDP+1;
-    if (XxDP=HS_DISPLAY-1) then
+    if (XxDP=HS_MANDELBROT-1) then
       XxDN <= (others => '0');
     end if;
   end if;
@@ -126,9 +134,9 @@ begin
   YxDN <= YxDP;
   if (WExS='1') then
     YxDN <= YxDP;
-    if (YxDP=VS_DISPLAY-1) and (XxDP=HS_DISPLAY-1) then
+    if (YxDP=VS_DISPLAY-1) and (XxDP=HS_MANDELBROT-1) then
       YxDN <= (others => '0');
-    elsif (XxDP=HS_DISPLAY-1) then
+    elsif (XxDP=HS_MANDELBROT-1) then
       YxDN <= YxDP+1;
     end if;
   end if;
@@ -139,8 +147,8 @@ begin
   begin
   CRExDN <= CRExDP;
   if (WExS='1') then
-    CRExDN <= CRExDP + C_RE_INC;
-    if (XxDP=HS_DISPLAY-1) then
+    CRExDN <= CRExDP + C_RE_INC_LR;
+    if (XxDP=HS_MANDELBROT-1) then
       CRExDN <= resize(C_RE_0, N_BITS_SHORT);
     end if;
   end if;
@@ -150,8 +158,8 @@ begin
     CIMxDN <= CIMxDP;
     if (YxDP=VS_DISPLAY-1) then
       CIMxDN <= resize(C_IM_0, N_BITS_SHORT);
-    elsif (XxDP=HS_DISPLAY-1) then
-      CIMxDN <= CIMxDP + C_IM_INC;
+    elsif (XxDP=HS_MANDELBROT-1) then
+      CIMxDN <= CIMxDP + C_IM_INC_LR;
     end if;
   end if;
   end process;

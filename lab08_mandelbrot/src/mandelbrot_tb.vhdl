@@ -127,7 +127,7 @@ begin
     wait until CLKxCI'event and CLKxCI = '1' and RSTxRI = '0';
 
     L1 : loop
-      exit L1 when (XxD = HS_DISPLAY - 1 and YxD = 99);
+      exit L1 when (XxD = 256-1 and YxD = 192-1);
       --exit L1 when (XxD = HS_DISPLAY - 1 and YxD = 768-1);
 
       --report "XxD = " & to_string(XxD);

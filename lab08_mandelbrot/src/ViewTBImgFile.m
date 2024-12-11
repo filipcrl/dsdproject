@@ -10,11 +10,11 @@
 function [img, img_color] = ViewTBImgFile(FileName, IterLim)
 
   if nargin < 2
-    IterLim = 100;
+    IterLim = 10;
   end
 
-  ImgWidth  = 1024;
-  ImgHeight = 100;
+  ImgWidth  = 256;
+  ImgHeight = 192;
 
   TBImgFile = fopen(FileName);
 
