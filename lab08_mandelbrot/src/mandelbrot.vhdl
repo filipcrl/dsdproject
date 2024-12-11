@@ -59,6 +59,12 @@ architecture rtl of mandelbrot is
       return resize(shift_right(SIGNED_IN, N_FRAC_CUT), N_BITS_OUT);
   end function reshape;
 
+  -- Initial values for zoom  --
+  signal C_RE_0xDP, C_RE_0xDN : signed(N_BITS_SHORT-1 downto 0);
+  signal C_IM_0xDP, C_IM_0xDN : signed(N_BITS_SHORT-1 downto 0);
+  signal C_RE_INCxDP, C_RE_INCxDN : signed(N_BITS_SHORT-1 downto 0);
+  signal C_IM_INCxDP, C_IM_INCxDN : signed(N_BITS_SHORT-1 downto 0);
+
   -- X --
   signal XxDPrv, XxDP, XxDN : unsigned(COORD_BW-1 downto 0);
 
@@ -105,6 +111,11 @@ begin
 
       CIMxDPrev <= resize(C_IM_0, N_BITS_SHORT);
       CIMxDP <= resize(C_IM_0, N_BITS_SHORT);
+
+      C_RE_0xDP <= resize(C_RE_0, N_BITS_SHORT);
+      C_IM_0xDP <= resize(C_IM_0, N_BITS_SHORT);
+      C_RE_INCxDP <= resize(C_RE_INC_LR, N_BITS_SHORT);
+      C_IM_INCxDP <= resize(C_IM_INC_LR, N_BITS_SHORT);
     elsif (CLKxCI'event and CLKxCI='1') then
       XxDPrv <= XxDP;
       XxDP <= XxDN;
@@ -117,6 +128,11 @@ begin
       
       CIMxDPrev <= CIMxDP;
       CIMxDP <= CIMxDN;
+
+      C_RE_0xDP <= C_RE_0xDN;
+      C_IM_0xDP <= C_IM_0xDN;
+      C_RE_INCxDP <= C_RE_INCxDN;
+      C_IM_INCxDP <= C_IM_INCxDN;
     end if;
   end process;
 
@@ -147,9 +163,9 @@ begin
   begin
   CRExDN <= CRExDP;
   if (WExS='1') then
-    CRExDN <= CRExDP + C_RE_INC_LR;
+    CRExDN <= CRExDP + C_RE_INCxDP;
     if (XxDP=HS_MANDELBROT-1) then
-      CRExDN <= resize(C_RE_0, N_BITS_SHORT);
+      CRExDN <= resize(C_RE_0xDP, N_BITS_SHORT);
     end if;
   end if;
   
@@ -157,11 +173,25 @@ begin
   if (WExS='1') then
     CIMxDN <= CIMxDP;
     if (YxDP=VS_MANDELBROT-1) then
-      CIMxDN <= resize(C_IM_0, N_BITS_SHORT);
+      CIMxDN <= resize(C_IM_0xDP, N_BITS_SHORT);
     elsif (XxDP=HS_MANDELBROT-1) then
-      CIMxDN <= CIMxDP + C_IM_INC_LR;
+      CIMxDN <= CIMxDP + C_IM_INCxDP;
     end if;
   end if;
+  end process;
+
+  -- Zoom logic --
+  process (all)
+  begin
+    C_RE_0xDN <= C_RE_0xDP;
+    C_IM_0xDN <= C_IM_0xDP;
+    C_RE_INCxDN <= C_RE_INCxDP;
+    C_IM_INCxDN <= C_IM_INCxDP;
+
+    if (YxDP=VS_MANDELBROT-1) and (XxDP=HS_MANDELBROT-2) then
+      C_RE_0xDN <= C_RE_0xDP + to_signed(1 * 2**(-12+N_FRAC), N_BITS);
+    end if;
+
   end process;
 
   -- Iteration loop --
@@ -215,7 +245,7 @@ begin
         ZIMxDN <= reshape(2 * ZRExDP * ZIMxDP + CIMxDP*(2**N_FRAC),
                           N_FRAC,
                           N_BITS_SHORT);
-        ZNORMxDN <=  reshape(ZRExDP * ZRExDP + ZIMxDP * ZIMxDP,
+        ZNORMxDN <= reshape(ZRExDP * ZRExDP + ZIMxDP * ZIMxDP,
                              N_FRAC, 
                              N_BITS_LONG);
       end if;
