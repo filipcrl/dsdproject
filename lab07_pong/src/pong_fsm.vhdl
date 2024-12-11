@@ -84,7 +84,7 @@ begin
 		else BallYxDP - BALL_STEP_Y;
 
 	PlateXNextxD <= PlateXxDP + PLATE_STEP_X when RightxSI = '1' else
-		PlateXxDP - PLATE_STEP_X when LeftxSI else
+		PlateXxDP - PLATE_STEP_X when LeftxSI and PlateXxDP>=PLATE_STEP_X else
 		PlateXxDP;
 
 	process (all)
