@@ -64,6 +64,13 @@ architecture rtl of mandelbrot_top is
 	signal DINAxD : std_logic_vector(MEM_DATA_BW - 1 downto 0);
 	signal DOUTBxD : std_logic_vector(MEM_DATA_BW - 1 downto 0);
 
+	-- blk_mem_gen_1
+  signal RdAddrSpritexD : std_logic_vector(12 - 1 downto 0);
+  signal DOutSpritexD : std_logic_vector(MEM_DATA_BW - 1 downto 0);
+	signal SpriteRedxS : std_logic_vector(COLOR_BW - 1 downto 0); -- Color to VGA controller
+	signal SpriteGreenxS : std_logic_vector(COLOR_BW - 1 downto 0);
+	signal SpriteBluexS : std_logic_vector(COLOR_BW - 1 downto 0);
+
 	signal BGRedxS : std_logic_vector(COLOR_BW - 1 downto 0); -- Background colors from the memory
 	signal BGGreenxS : std_logic_vector(COLOR_BW - 1 downto 0);
 	signal BGBluexS : std_logic_vector(COLOR_BW - 1 downto 0);
@@ -120,6 +127,17 @@ architecture rtl of mandelbrot_top is
 			doutb  : out std_logic_vector(11 downto 0)
 		);
 	end component;
+
+  COMPONENT blk_mem_gen_1
+    PORT (
+      clka : IN STD_LOGIC;
+      ena : IN STD_LOGIC;
+      wea : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+      addra : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
+      dina : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
+      douta : OUT STD_LOGIC_VECTOR(11 DOWNTO 0) 
+    );
+  END COMPONENT;
 
 	component vga_controller is
 		port 
@@ -217,6 +235,16 @@ begin
 		doutb  => DOUTBxD
 	);
 
+  i_blk_mem_gen_1: blk_mem_gen_1
+  PORT MAP (
+    clka => CLK75xC,
+    ena => '1',
+    wea => "0",
+    addra => RdAddrSpritexD,
+    dina => (others => '0'),
+    douta => DOutSpritexD
+  );
+
 	i_vga_controller : vga_controller
 	port map
 	(
@@ -285,6 +313,8 @@ begin
 	ENBxS <= '1';
 	RdAddrBxD <= std_logic_vector(resize((HS_DISPLAY / 4) * (YCoordxD / 4) + (XCoordxD / 4), RdAddrBxD'length));
 
+    RdAddrSpritexD <= std_logic_vector(resize((YCoordxD mod 16) * 16 + (XCoordxD mod 16), RdAddrSpritexD'length));
+
 	--=============================================================================
 	-- SPRITE SIGNAL MAPPING
 	--=============================================================================
@@ -292,6 +322,10 @@ begin
 	BGRedxS <= DOUTBxD(3 * COLOR_BW - 1 downto 2 * COLOR_BW);
 	BGGreenxS <= DOUTBxD(2 * COLOR_BW - 1 downto 1 * COLOR_BW);
 	BGBluexS <= DOUTBxD(1 * COLOR_BW - 1 downto 0 * COLOR_BW);
+
+	SpriteRedxS <= DOutSpritexD(3 * COLOR_BW - 1 downto 2 * COLOR_BW);
+	SpriteGreenxS <= DOutSpritexD(2 * COLOR_BW - 1 downto 1 * COLOR_BW);
+	SpriteBluexS <= DOutSpritexD(1 * COLOR_BW - 1 downto 0 * COLOR_BW);
 
 	DrawBallxS <= '1' when ((signed(XCoordxD) - signed(BallXxD)) * (signed(XCoordxD) - signed(BallXxD)) +
 		(signed(YCoordxD) - signed(BallYxD)) * (signed(YCoordxD) - signed(BallYxD))) <= (BALL_WIDTH/2) * (BALL_WIDTH/2)
@@ -303,16 +337,16 @@ begin
 	               (YCoordxD <= VS_DISPLAY)
 	               else '0';
 
-	RedxS <= "1111" when DrawBallxS = '1' else
-	         "1111" when DrawPlatexS = '1' else
+	RedxS <= SpriteRedxS when DrawBallxS = '1' else
+	         SpriteRedxS when DrawPlatexS = '1' else
 	         BGRedxS;
 
-	GreenxS <= "1111" when DrawBallxS = '1' else
-	           "1111" when DrawPlatexS = '1' else
+	GreenxS <= SpriteGreenxS when DrawBallxS = '1' else
+	           SpriteGreenxS when DrawPlatexS = '1' else
 	           BGGreenxS;
 
-	BluexS <= "1111" when DrawBallxS = '1' else
-	          "1111" when DrawPlatexS = '1' else
+	BluexS <= SpriteBluexS when DrawBallxS = '1' else
+	          SpriteBluexS when DrawPlatexS = '1' else
 	          BGBluexS;
 
 end rtl;
