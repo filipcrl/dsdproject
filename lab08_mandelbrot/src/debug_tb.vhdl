@@ -53,14 +53,14 @@ begin
     debug_process : process
     begin
         while true loop
-            if (WExS = '1') then
+            --if (WExS = '1') then
                 report "clk = " & to_string(clk);
                 report "WExSO = " & to_string(WExS);
                 report "XxDO = " & integer'image(to_integer(XxD));
                 report "YxD0 = " & integer'image(to_integer(YxD));
                 report "ITERxDO = " & integer'image(to_integer(ITERxD));
                 report "=======";
-            end if;
+            --end if;
             wait for 10 us;
         end loop;
     end process debug_process;

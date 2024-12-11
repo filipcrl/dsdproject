@@ -220,6 +220,8 @@ begin
         ZNORMxDN <=  reshape(ZRExDP * ZRExDP + ZIMxDP * ZIMxDP,
                              N_FRAC, 
                              N_BITS_LONG);
+      else
+        ZNORMxDN <= (others => '0');
       end if;
     end if;
   end process;
@@ -241,7 +243,7 @@ begin
   XxDO <= XxDP;
   YxDO <= YxDP;
   WExSO <= WExS;
-  ITERxDO <= ITERxDPrev;
+  ITERxDO <= ITERxDP;
 end architecture rtl;
 --=============================================================================
 -- ARCHITECTURE END
