@@ -134,7 +134,7 @@ begin
   YxDN <= YxDP;
   if (WExS='1') then
     YxDN <= YxDP;
-    if (YxDP=VS_DISPLAY-1) and (XxDP=HS_MANDELBROT-1) then
+    if (YxDP=VS_MANDELBROT-1) and (XxDP=HS_MANDELBROT-1) then
       YxDN <= (others => '0');
     elsif (XxDP=HS_MANDELBROT-1) then
       YxDN <= YxDP+1;
@@ -156,7 +156,7 @@ begin
   CIMxDN <= CIMxDP;
   if (WExS='1') then
     CIMxDN <= CIMxDP;
-    if (YxDP=VS_DISPLAY-1) then
+    if (YxDP=VS_MANDELBROT-1) then
       CIMxDN <= resize(C_IM_0, N_BITS_SHORT);
     elsif (XxDP=HS_MANDELBROT-1) then
       CIMxDN <= CIMxDP + C_IM_INC_LR;
@@ -178,8 +178,6 @@ begin
 
       ITERxDPrev <= (others => '0');
       ITERxDP <= (others => '0');
-
-      WExS <= '0';
     elsif (CLKxCI'event and CLKxCI='1') then
       ZRExDPrev <= ZRExDP;
       ZRExDP <= ZRExDN;
@@ -191,12 +189,12 @@ begin
       
       ITERxDPrev <= ITERxDP;
       ITERxDP <= ITERxDN;
-
-      WExS <= '0' when (ZNORMxDP < ITER_LIM and ITERxDP < MAX_ITER) else
-              '1';
     end if;
   end process;
   
+  WExS <= '0' when (ZNORMxDP < ITER_LIM and ITERxDP < MAX_ITER) else
+              '1';
+
   -- Re(z), Im(z) computation -- 
   process (all)
   begin
@@ -220,8 +218,6 @@ begin
         ZNORMxDN <=  reshape(ZRExDP * ZRExDP + ZIMxDP * ZIMxDP,
                              N_FRAC, 
                              N_BITS_LONG);
-      else
-        ZNORMxDN <= (others => '0');
       end if;
     end if;
   end process;
