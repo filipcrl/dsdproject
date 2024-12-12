@@ -65,7 +65,7 @@ package dsd_prj_pkg is
   constant BALL_STEP_X  : natural := 0;
   constant BALL_STEP_Y  : natural := 0;
   constant PLATE_WIDTH  : natural := 96;
-  constant PLATE_HEIGHT : natural := 24;
+  constant PLATE_HEIGHT : natural := 25;
   constant PLATE_STEP_X : natural := 6;
 
 -------------------------------------------------------------------------------

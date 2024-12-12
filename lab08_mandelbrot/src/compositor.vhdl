@@ -101,7 +101,7 @@ begin
 	process (CLKxCI, RSTxRI)
 	begin
 		if (RSTxRI = '1') then
-			SpriteNxDP <= (others => '0');
+			SpriteNxDP <= to_unsigned(1, SpriteNxDP'length);
 			AnimCntxDP <= (others => '0');
 		elsif (CLKxCI'EVENT and CLKxCI = '1') then
 			SpriteNxDP <= SpriteNxDN;
@@ -120,8 +120,8 @@ begin
 					AnimCntxDN <= (others => '0');
           SpriteNxDN <= SpriteNxDP + 1;
 
-          if (SpriteNxDP = 3) then
-            SpriteNxDN <= (others => '0');
+          if (SpriteNxDP = 4) then
+            SpriteNxDN <= to_unsigned(1, SpriteNxDP'length);
           end if;
 				end if;
 			end if;
@@ -148,15 +148,15 @@ begin
 		-- (signed(YCoordxDI) - signed(BallYxDI)) * (signed(YCoordxDI) - signed(BallYxDI))) <= (BALL_WIDTH/2)*(BALL_WIDTH/2)
 		-- else '0';
 
-		DrawBallxS <= '1' when (XCoordxDI > BallXxDI - BALL_WIDTH/2) and
-		              (XCoordxDI <= BallXxDI + BALL_WIDTH/2) and
-		              (YCoordxDI > BallYxDI - BALL_HEIGHT/2) and
+		DrawBallxS <= '1' when (XCoordxDI >= BallXxDI - BALL_WIDTH/2) and
+		              (XCoordxDI < BallXxDI + BALL_WIDTH/2) and
+		              (YCoordxDI >= BallYxDI - BALL_HEIGHT/2) and
 		              (YCoordxDI <= BallYxDI + BALL_HEIGHT/2) else '0';
 
 		-- Determine if the current pixel is inside the plate
-		DrawPlatexS <= '1' when (XCoordxDI > PlateXxDI - PLATE_WIDTH/2) and
-		               (XCoordxDI <= PlateXxDI + PLATE_WIDTH/2) and
-		               (YCoordxDI > VS_DISPLAY - PLATE_HEIGHT) and
+		DrawPlatexS <= '1' when (XCoordxDI >= PlateXxDI - PLATE_WIDTH/2) and
+		               (XCoordxDI < PlateXxDI + PLATE_WIDTH/2) and
+		               (YCoordxDI >= VS_DISPLAY - PLATE_HEIGHT) and
 		               (YCoordxDI <= VS_DISPLAY)
 		               else '0';
 
@@ -169,11 +169,9 @@ begin
       RdAddrSpritexD <= (others => '0');
 
       if (DrawBallxS = '1') then
-        RdAddrSpritexD <= std_logic_vector(resize(
-          16 * 16 * SpriteNxDP + (((YCoordxDI/2) mod 16) - ((BallYxDI/2 - 8) mod 16)) * 16 + ((XCoordxDI/2) mod 16) - ((BallXxDI/2 - 8) mod 16), RdAddrSpritexD'length)
-          );
+        RdAddrSpritexD <= std_logic_vector(resize(256 * SpriteNxDP + (YCoordxDI - BallYxDI + BALL_HEIGHT/2)/2 * 16 + (XCoordxDI - BallXxDI + BALL_WIDTH/2)/2, RdAddrSpritexD'length));
       elsif (DrawPlatexS = '1') then
-        RdAddrSpritexD <= std_logic_vector(resize(((YCoordxDI mod 16) * 16 + (XCoordxDI mod 16) - (PlateXxDI mod 16)) rem (16*16), RdAddrSpritexD'length));
+        RdAddrSpritexD <= std_logic_vector(resize((YCoordxDI mod 16) * 16 + ((XCoordxDI - PlateXxDI + PLATE_WIDTH/2) mod 16), RdAddrSpritexD'length));
       end if;
     end process;
 

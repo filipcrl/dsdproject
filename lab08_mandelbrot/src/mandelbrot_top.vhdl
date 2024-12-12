@@ -288,7 +288,7 @@ begin
 
   i_compositor : compositor
     port map (
-      CLKxCI    => CLK75xC,
+      CLKxCI    => CLK125xCI,
       RSTxRI    => RSTxRI,
 
       VSEdgexSI => VSEdgexS,
