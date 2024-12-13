@@ -1,0 +1,17 @@
+INFO: [VRFC 10-2263] Analyzing Verilog file "/home/filip/src/dsd-project-ba5/lab06_memory/vivado_project/vivado_project.gen/sources_1/ip/blk_mem_gen_0/sim/blk_mem_gen_0.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module blk_mem_gen_0
+INFO: [VRFC 10-2263] Analyzing Verilog file "/home/filip/src/dsd-project-ba5/lab06_memory/vivado_project/vivado_project.gen/sources_1/ip/clk_wiz_0/clk_wiz_0_clk_wiz.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module clk_wiz_0_clk_wiz
+INFO: [VRFC 10-2263] Analyzing Verilog file "/home/filip/src/dsd-project-ba5/lab06_memory/vivado_project/vivado_project.gen/sources_1/ip/clk_wiz_0/clk_wiz_0.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module clk_wiz_0
+INFO: [VRFC 10-2263] Analyzing Verilog file "/home/filip/src/dsd-project-ba5/lab06_memory/vivado_project/vivado_project.sim/sim_1/behav/xsim/glbl.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module glbl
+INFO: [VRFC 10-163] Analyzing VHDL file "/home/filip/src/dsd-project-ba5/lab06_memory/src/dsd_prj_pkg.vhdl" into library xil_defaultlib
+INFO: [VRFC 10-163] Analyzing VHDL file "/home/filip/src/dsd-project-ba5/lab06_memory/src/vga_controller.vhdl" into library xil_defaultlib
+INFO: [VRFC 10-3107] analyzing entity 'vga_controller'
+ERROR: [VRFC 10-1449] this construct is only supported in VHDL 1076-2008 [/home/filip/src/dsd-project-ba5/lab06_memory/src/vga_controller.vhdl:75]
+ERROR: [VRFC 10-1449] this construct is only supported in VHDL 1076-2008 [/home/filip/src/dsd-project-ba5/lab06_memory/src/vga_controller.vhdl:106]
+ERROR: [VRFC 10-1449] this construct is only supported in VHDL 1076-2008 [/home/filip/src/dsd-project-ba5/lab06_memory/src/vga_controller.vhdl:109]
+ERROR: [VRFC 10-1449] this construct is only supported in VHDL 1076-2008 [/home/filip/src/dsd-project-ba5/lab06_memory/src/vga_controller.vhdl:110]
+ERROR: [VRFC 10-9458] unit 'rtl' is ignored due to previous errors [/home/filip/src/dsd-project-ba5/lab06_memory/src/vga_controller.vhdl:52]
+INFO: [VRFC 10-8704] VHDL file '/home/filip/src/dsd-project-ba5/lab06_memory/src/vga_controller.vhdl' is ignored due to errors

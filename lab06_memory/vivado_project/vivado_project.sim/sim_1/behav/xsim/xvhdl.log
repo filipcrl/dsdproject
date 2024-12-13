@@ -1,0 +1,9 @@
+INFO: [VRFC 10-163] Analyzing VHDL file "/home/filip/src/dsd-project-ba5/lab06_memory/src/dsd_prj_pkg.vhdl" into library xil_defaultlib
+INFO: [VRFC 10-163] Analyzing VHDL file "/home/filip/src/dsd-project-ba5/lab06_memory/src/vga_controller.vhdl" into library xil_defaultlib
+INFO: [VRFC 10-3107] analyzing entity 'vga_controller'
+ERROR: [VRFC 10-1449] this construct is only supported in VHDL 1076-2008 [/home/filip/src/dsd-project-ba5/lab06_memory/src/vga_controller.vhdl:75]
+ERROR: [VRFC 10-1449] this construct is only supported in VHDL 1076-2008 [/home/filip/src/dsd-project-ba5/lab06_memory/src/vga_controller.vhdl:106]
+ERROR: [VRFC 10-1449] this construct is only supported in VHDL 1076-2008 [/home/filip/src/dsd-project-ba5/lab06_memory/src/vga_controller.vhdl:109]
+ERROR: [VRFC 10-1449] this construct is only supported in VHDL 1076-2008 [/home/filip/src/dsd-project-ba5/lab06_memory/src/vga_controller.vhdl:110]
+ERROR: [VRFC 10-9458] unit 'rtl' is ignored due to previous errors [/home/filip/src/dsd-project-ba5/lab06_memory/src/vga_controller.vhdl:52]
+INFO: [VRFC 10-8704] VHDL file '/home/filip/src/dsd-project-ba5/lab06_memory/src/vga_controller.vhdl' is ignored due to errors
